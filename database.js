@@ -397,6 +397,8 @@ function deleteRecord(id, pin = '') {
 }
 
 module.exports = {
+  db,
+  DB_PATH,
   verifyPin,
   getSettings,
   updateSettings,

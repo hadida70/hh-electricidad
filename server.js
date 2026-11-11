@@ -23,6 +23,8 @@ const {
   createRecord,
   deleteRecord
 } = require('./database');
+const dbModule = require('./database');
+const { startBackups } = require('./backup');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -213,6 +215,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
+  startBackups(dbModule.db, dbModule.DB_PATH);
   console.log(`============================================================`);
   console.log(`  חברת החשמל - טופס אישור פריקה (http://localhost:${PORT})`);
   console.log(`============================================================`);
