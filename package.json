@@ -1,0 +1,10 @@
+{
+  "name": "proyecto-electricidad-hh-devoluciones",
+  "version": "1.0.0",
+  "description": "Sistema de Devolución de Productos y Desechos - Proyecto Electricidad HH",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
+

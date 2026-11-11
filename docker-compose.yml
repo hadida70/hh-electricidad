@@ -1,0 +1,32 @@
+services:
+  app:
+    image: node:22-alpine
+    container_name: electricidad-hh-app
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+      - DB_PATH=/data/devoluciones.db
+      - ADMIN_PIN=${ADMIN_PIN:-}
+      - DEFAULT_WA_NAME=${DEFAULT_WA_NAME:-}
+      - DEFAULT_WA_PHONE=${DEFAULT_WA_PHONE:-}
+    volumes:
+      - electricidad_hh_data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.electricidad-hh.rule=Host(`srv1944456.hstgr.cloud`) || Host(`hh.hadida.cloud`)"
+      - "traefik.http.routers.electricidad-hh.entrypoints=websecure"
+      - "traefik.http.routers.electricidad-hh.tls.certresolver=letsencrypt"
+      - "traefik.http.services.electricidad-hh.loadbalancer.server.port=3005"
+    command: >
+      sh -c "
+        apk add --no-cache git &&
+        rm -rf /app/repo &&
+        git clone --depth 1 https://github.com/hadida70/hh-electricidad.git /app/repo &&
+        cd /app/repo &&
+        node --disable-warning=ExperimentalWarning server.js
+      "
+
+volumes:
+  electricidad_hh_data:

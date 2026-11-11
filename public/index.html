@@ -1,0 +1,392 @@
+﻿<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>אישור פריקה - חברת החשמל</title>
+  <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="page-wrapper">
+    <form id="ishurPrikaForm" class="official-sheet" novalidate>
+      <!-- לוגו חברת החשמל וכפתור הגדרת אנשי קשר ל-WhatsApp (מוגן ב-PIN) -->
+      <div class="appendix-block">
+        <img src="/logo.jpg" alt="חברת החשמל" class="iec-logo-img-appendix" />
+        <button
+          type="button"
+          id="btnOpenWhatsappConfig"
+          class="btn-admin-toggle no-print"
+        >
+          ⚙️ הגדרת מספרי WhatsApp (PIN)
+        </button>
+      </div>
+
+      <!-- תיבת הגדרת עד 3 אנשי קשר ל-WhatsApp (נפתחת עם PIN) -->
+      <div id="whatsappConfigBox" class="wa-config-panel hidden no-print">
+        <div class="wa-config-header">
+          <strong>📱 הגדרת עד 3 אנשי קשר לקבלת אישורים ב-WhatsApp:</strong>
+          <button type="button" id="btnCloseWhatsappConfig" class="btn-outline" style="padding: 0.25rem 0.6rem; font-size: 0.82rem;">
+            סגור ✕
+          </button>
+        </div>
+        <div class="wa-contacts-grid">
+          <div class="wa-contact-row">
+            <span class="wa-contact-num">איש קשר 1:</span>
+            <input type="text" id="waName1" placeholder="שם איש קשר 1..." autocomplete="off" />
+            <input type="text" id="waPhone1" dir="ltr" placeholder="מספר WhatsApp (כגון: 0501234567)..." autocomplete="off" />
+          </div>
+          <div class="wa-contact-row">
+            <span class="wa-contact-num">איש קשר 2:</span>
+            <input type="text" id="waName2" placeholder="שם איש קשר 2..." autocomplete="off" />
+            <input type="text" id="waPhone2" dir="ltr" placeholder="מספר WhatsApp (כגון: 0501234567)..." autocomplete="off" />
+          </div>
+          <div class="wa-contact-row">
+            <span class="wa-contact-num">איש קשר 3:</span>
+            <input type="text" id="waName3" placeholder="שם איש קשר 3..." autocomplete="off" />
+            <input type="text" id="waPhone3" dir="ltr" placeholder="מספר WhatsApp (כגון: 0501234567)..." autocomplete="off" />
+          </div>
+        </div>
+        <div class="wa-config-actions">
+          <button type="button" id="btnSaveWhatsappContacts" class="btn-inline-save">
+            💾 שמור אנשי קשר
+          </button>
+          <span id="waPhoneSavedStatus" class="wa-phone-status"></span>
+        </div>
+      </div>
+
+      <!-- כותרת מרכזית -->
+      <div class="main-heading">
+        <h1>אישור פריקה</h1>
+        <p class="subtitle-statement">החומר נבדק ומאושר לפריקה.</p>
+      </div>
+
+      <!-- טבלה מרכזית עם תפריט נפתח (Dropdown) לכל עמודה -->
+      <div class="table-container">
+        <table class="prika-main-table">
+          <thead>
+            <tr>
+              <th style="width: 19%;">שם מנהל עבודה</th>
+              <th style="width: 19%;">שם הנהג</th>
+              <th style="width: 18%;">תאריך</th>
+              <th style="width: 44%;">הערות (מוצרים + סידורי + תמונה)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <!-- 1. עמודה: שם מנהל עבודה (תפריט נפתח) -->
+              <td>
+                <div class="dropdown-cell-wrap">
+                  <div class="select-with-add">
+                    <select id="machsanSholeach" name="machsanSholeach" class="table-dropdown" required>
+                      <option value="">-- בחר שם מנהל עבודה --</option>
+                    </select>
+                    <button
+                      type="button"
+                      id="btnOpenAddMenahel"
+                      class="btn-mini-add no-print"
+                      title="הוסף שם מנהל עבודה לתפריט"
+                    >
+                      ➕
+                    </button>
+                  </div>
+
+                  <!-- תיבה להוספת שם חדש לתפריט הנפתח -->
+                  <div id="boxAddMenahel" class="inline-add-box no-print hidden">
+                    <input
+                      type="text"
+                      id="newMenahelNameInput"
+                      placeholder="הקלד שם מנהל עבודה..."
+                      autocomplete="off"
+                    />
+                    <button type="button" id="btnAddMenahelName" class="btn-inline-save">
+                      שמור
+                    </button>
+                  </div>
+
+                  <!-- ניהול שמות קיימים -->
+                  <div id="menahelNamesList" class="mini-chips-list no-print"></div>
+                </div>
+              </td>
+
+              <!-- 2. עמודה: שם הנהג (תפריט נפתח) -->
+              <td>
+                <div class="dropdown-cell-wrap">
+                  <div class="select-with-add">
+                    <select id="shemNahag" name="shemNahag" class="table-dropdown" required>
+                      <option value="">-- בחר שם הנהג --</option>
+                    </select>
+                    <button
+                      type="button"
+                      id="btnOpenAddNahag"
+                      class="btn-mini-add no-print"
+                      title="הוסף שם נהג לתפריט"
+                    >
+                      ➕
+                    </button>
+                  </div>
+
+                  <!-- תיבה להוספת שם נהג חדש לתפריט הנפתח -->
+                  <div id="boxAddNahag" class="inline-add-box no-print hidden">
+                    <input
+                      type="text"
+                      id="newNahagNameInput"
+                      placeholder="הקלד שם נהג..."
+                      autocomplete="off"
+                    />
+                    <button type="button" id="btnAddNahagName" class="btn-inline-save">
+                      שמור
+                    </button>
+                  </div>
+
+                  <div id="nahagNamesList" class="mini-chips-list no-print"></div>
+                </div>
+              </td>
+
+              <!-- 3. עמודה: תאריך (תאריך ושעה אוטומטיים + תפריט בחירה) -->
+              <td>
+                <div class="dropdown-cell-wrap">
+                  <input
+                    type="datetime-local"
+                    id="taarichPrika"
+                    name="taarichPrika"
+                    class="table-dropdown"
+                    required
+                  />
+                  <button
+                    type="button"
+                    id="btnNowDateTime"
+                    class="btn-date-now no-print"
+                  >
+                    🕒 עדכן לזמן נוכחי
+                  </button>
+                </div>
+              </td>
+
+              <!-- 4. עמודה: הערות (תפריט נפתח למוצרים + סידורי לידו + הוספת תמונה) -->
+              <td>
+                <div class="dropdown-cell-wrap">
+                  <!-- תפריט נפתח רחב לבחירת מוצר + מספר סידורי לידו -->
+                  <div class="product-serial-dropdown-row no-print">
+                    <div class="select-with-add product-select-wide">
+                      <select id="itemProductSelect" class="table-dropdown product-dropdown-long">
+                        <option value="">-- בחר מוצר (כגון: כבלים תפזורת) --</option>
+                      </select>
+                      <button
+                        type="button"
+                        id="btnOpenAddProduct"
+                        class="btn-mini-add"
+                        title="הוסף סוג מוצר חדש לתפריט"
+                      >
+                        ➕
+                      </button>
+                    </div>
+
+                    <input
+                      type="text"
+                      id="itemSerialInput"
+                      class="table-input-serial"
+                      placeholder="מספר סידורי (Serial)..."
+                      autocomplete="off"
+                    />
+
+                    <button type="button" id="btnAddProductSerial" class="btn-inline-save">
+                      הוסף
+                    </button>
+                  </div>
+
+                  <!-- תיבה להוספת סוג מוצר חדש לתפריט המוצרים -->
+                  <div id="boxAddProduct" class="inline-add-box no-print hidden">
+                    <input
+                      type="text"
+                      id="newCatalogProductInput"
+                      placeholder="הקלד שם מוצר חדש לתפריט..."
+                      autocomplete="off"
+                    />
+                    <button type="button" id="btnAddCatalogProduct" class="btn-inline-save">
+                      שמור מוצר
+                    </button>
+                  </div>
+
+                  <div id="catalogProductsList" class="mini-chips-list no-print"></div>
+
+                  <!-- הערה כתובה + כפתור הוספת תמונה -->
+                  <div class="hearot-note-photo-row no-print">
+                    <input
+                      type="text"
+                      id="hearot"
+                      name="hearot"
+                      class="table-dropdown"
+                      placeholder="הערה נוספת..."
+                      autocomplete="off"
+                    />
+                    <input
+                      type="file"
+                      id="photoFileInput"
+                      accept="image/*"
+                      multiple
+                      class="hidden"
+                    />
+                    <button type="button" id="btnTriggerPhoto" class="btn-photo-btn">
+                      📷 תמונה
+                    </button>
+                  </div>
+
+                  <!-- תצוגת טבלת מוצרים + סידורי ותמונות שנוספו -->
+                  <div id="addedProductsTableWrap" class="added-products-wrap hidden">
+                    <table class="inner-ps-table">
+                      <thead>
+                        <tr>
+                          <th>מוצר</th>
+                          <th>סידורי (Serial)</th>
+                          <th class="no-print"></th>
+                        </tr>
+                      </thead>
+                      <tbody id="addedProductsTbody"></tbody>
+                    </table>
+                  </div>
+
+                  <div id="addedPhotosWrap" class="added-photos-wrap hidden">
+                    <div id="photosGalleryList" class="photos-gallery-list"></div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+
+          <!-- שורה תחתונה בטבלה: שם המחסנאי המאשר וחתימה -->
+          <tfoot>
+            <tr>
+              <td colspan="4" class="machsanai-footer-cell">
+                <div class="machsanai-table-row">
+                  <div class="machsanai-mador-section">
+                    <div class="mador-top-bar">
+                      <label for="shemMachsanai" class="footer-label">
+                        שם המחסנאי המאשר וחתימה:
+                      </label>
+
+                      <div class="select-with-add" style="min-width: 280px; flex: 1;">
+                        <select id="shemMachsanai" name="shemMachsanai" class="table-dropdown">
+                          <option value="">-- בחר שם המחסנאי המאשר --</option>
+                        </select>
+                        <button
+                          type="button"
+                          id="btnOpenAddMachsanai"
+                          class="btn-mini-add no-print"
+                          title="הוסף שם מאשר לתפריט"
+                        >
+                          ➕
+                        </button>
+                      </div>
+
+                      <!-- סינון מהיר לפי מדור -->
+                      <div class="mador-buttons-group no-print">
+                        <button type="button" class="btn-mador-tab" data-mador="8120">8120</button>
+                        <button type="button" class="btn-mador-tab" data-mador="8150">8150</button>
+                        <button type="button" class="btn-mador-tab" data-mador="8110">8110</button>
+                        <button type="button" class="btn-mador-tab" data-mador="8130">8130</button>
+                      </div>
+                    </div>
+
+                    <div id="boxAddMachsanai" class="inline-add-box no-print hidden">
+                      <input
+                        type="text"
+                        id="newMachsanaiNameInput"
+                        placeholder="הקלד שם ומספר מדור (לדוגמה: חיים הדידה 8110)..."
+                        autocomplete="off"
+                      />
+                      <button type="button" id="btnAddMachsanaiName" class="btn-inline-save">
+                        שמור
+                      </button>
+                    </div>
+
+                    <!-- רשימת השמות הקיימים עם המספר (כגון: חיים הדידה 8110) -->
+                    <div id="machsanaiNamesList" class="mini-chips-list no-print"></div>
+                  </div>
+
+                  <!-- לוח חתימה -->
+                  <div class="signature-pad-wrapper">
+                    <canvas id="signatureCanvas" width="260" height="68" title="חתום כאן"></canvas>
+                    <button type="button" id="btnClearSignature" class="btn-clear-sig no-print">
+                      נקה חתימה
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div id="formAlert" class="form-alert hidden no-print" role="alert"></div>
+
+      <!-- חלונית שליחת הודעה מוכנה ל-WhatsApp (מופיעה רק עבור הפעולה שנשמרה כעת!) -->
+      <div id="whatsappConfirmCard" class="whatsapp-confirm-card hidden no-print">
+        <div class="wa-card-header">
+          <span class="wa-card-title">✅ הפעולה נשמרה! בחר למי לשלוח את האישור ב-WhatsApp:</span>
+        </div>
+        <div id="whatsappRecipientsButtons" class="wa-recipients-buttons"></div>
+        <pre id="whatsappMessagePreview" class="wa-message-preview"></pre>
+      </div>
+
+      <!-- כפתורי פעולה -->
+      <div class="sheet-actions no-print">
+        <button type="button" id="btnResetForm" class="btn btn-outline">
+          נקה טבלה
+        </button>
+        <button type="button" id="btnPrintSheet" class="btn btn-secondary">
+          🖨️ הדפס אישור פריקה
+        </button>
+        <button type="submit" class="btn btn-primary">
+          💾 שמור אישור פריקה
+        </button>
+      </div>
+
+      <!-- רשימת כל הפעולות השמורות (גלויה לכולם ללא צורך במנהל) -->
+      <section id="publicOperationsSection" class="admin-db-section no-print">
+        <div class="admin-db-header">
+          <h2>📋 כל הפעולות השמורות במערכת (<span id="adminRecordsCount">0</span>)</h2>
+          <div class="admin-header-actions">
+            <button type="button" id="btnExportCsv" class="btn btn-secondary">
+              📥 ייצוא לאקסל (CSV)
+            </button>
+            <button type="button" id="btnRefreshAdmin" class="btn btn-outline">
+              🔄 רענן רשימה
+            </button>
+          </div>
+        </div>
+
+        <!-- חיפוש וסינון ברשימת הפעולות -->
+        <div class="admin-search-bar">
+          <input
+            type="text"
+            id="adminSearchInput"
+            placeholder="🔍 חפש לפי שם מנהל עבודה, שם נהג, מוצר, מספר סידורי, מחסנאי מאשר או תאריך..."
+          />
+        </div>
+
+        <!-- טבלת כל הפעולות (ללא כפתור WhatsApp ברשימה, ומחיקה עם קוד PIN בלבד) -->
+        <div class="table-container">
+          <table class="admin-records-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>שם מנהל עבודה</th>
+                <th>שם הנהג</th>
+                <th>תאריך פריקה</th>
+                <th>הערות / מוצרים וסידורי</th>
+                <th>תמונות</th>
+                <th>שם המחסנאי המאשר וחתימה</th>
+                <th style="width: 55px; text-align: center;">מחיקה</th>
+              </tr>
+            </thead>
+            <tbody id="adminRecordsTbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </form>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

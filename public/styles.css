@@ -1,0 +1,813 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Arial', 'Segoe UI', Tahoma, sans-serif;
+  background-color: #e2e8f0;
+  color: #111827;
+  padding: 1.5rem 1rem;
+  min-height: 100vh;
+}
+
+.page-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.official-sheet {
+  width: 100%;
+  max-width: 1280px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+  padding: 2rem 2.2rem 2.4rem;
+}
+
+.appendix-block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.btn-admin-toggle {
+  background: #1e293b;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.55rem 1rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-admin-toggle:hover {
+  background: #0f172a;
+}
+
+.iec-logo-img-appendix {
+  width: 105px;
+  height: auto;
+  display: block;
+}
+
+.main-heading {
+  text-align: center;
+  margin: 0.2rem 0 1.8rem;
+}
+
+.main-heading h1 {
+  font-size: 2.3rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  margin-bottom: 0.35rem;
+}
+
+.subtitle-statement {
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+/* עיצוב הטבלה המרכזית */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.prika-main-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid #0f172a;
+}
+
+.prika-main-table th {
+  background: #0f4c81;
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  padding: 0.85rem 0.75rem;
+  border: 1.5px solid #0f172a;
+  text-align: right;
+}
+
+.prika-main-table td {
+  border: 1.5px solid #0f172a;
+  padding: 0.85rem 0.75rem;
+  vertical-align: top;
+  background: #ffffff;
+}
+
+.dropdown-cell-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.select-with-add {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.table-dropdown {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.98rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: #0f172a;
+  background-color: #f8fafc;
+  border: 1.5px solid #94a3b8;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+}
+
+.table-dropdown:focus {
+  border-color: #0f4c81;
+  background-color: #ffffff;
+}
+
+.btn-mini-add {
+  background: #f97316;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  width: 34px;
+  height: 36px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-mini-add:hover {
+  background: #ea580c;
+}
+
+.inline-add-box {
+  display: flex;
+  gap: 0.35rem;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  border-radius: 6px;
+  padding: 0.4rem;
+}
+
+.inline-add-box input {
+  flex: 1;
+  min-width: 100px;
+  padding: 0.38rem 0.55rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.btn-inline-save {
+  background: #0f4c81;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 0.38rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-inline-save:hover {
+  background: #0b3961;
+}
+
+.btn-date-now {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  padding: 0.32rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-date-now:hover {
+  background: #e2e8f0;
+}
+
+/* עמודת הערות: מוצר + סידורי + תמונה */
+.product-serial-dropdown-row {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.product-select-wide {
+  flex: 2.2;
+  min-width: 270px;
+}
+
+.product-dropdown-long {
+  min-width: 230px;
+  font-size: 1.02rem;
+}
+
+.table-input-serial {
+  flex: 1.2;
+  min-width: 145px;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  border: 1.5px solid #94a3b8;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.hearot-note-photo-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.btn-photo-btn {
+  background: #059669;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-photo-btn:hover {
+  background: #047857;
+}
+
+.mini-chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.menahel-name-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  padding: 0.18rem 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.menahel-name-chip:hover {
+  background: #e0f2fe;
+  border-color: #0f4c81;
+}
+
+.chip-del-btn {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.chip-del-btn:hover {
+  color: #dc2626;
+}
+
+.inner-ps-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-top: 0.25rem;
+}
+
+.inner-ps-table th,
+.inner-ps-table td {
+  border: 1px solid #cbd5e1;
+  padding: 0.3rem 0.5rem;
+}
+
+.inner-ps-table th {
+  background: #f1f5f9;
+  color: #0f172a;
+  font-size: 0.84rem;
+}
+
+.photos-gallery-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.photo-thumb-card {
+  position: relative;
+  width: 86px;
+  height: 70px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.photo-thumb-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-del-btn {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(220, 38, 38, 0.9);
+  color: #ffffff;
+  font-size: 0.68rem;
+  cursor: pointer;
+}
+
+/* שורה תחתונה בטבלה: שם המחסנאי המאשר וחתימה לפי מדור */
+.machsanai-footer-cell {
+  background: #f8fafc !important;
+  padding: 1rem !important;
+}
+
+.machsanai-table-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.machsanai-mador-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  flex: 1;
+}
+
+.mador-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.mador-select {
+  max-width: 280px;
+}
+
+.mador-buttons-group {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.btn-mador-tab {
+  background: #ffffff;
+  color: #0f4c81;
+  border: 1.5px solid #0f4c81;
+  border-radius: 6px;
+  padding: 0.42rem 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-mador-tab:hover,
+.btn-mador-tab.active {
+  background: #0f4c81;
+  color: #ffffff;
+}
+
+.selected-mador-badge {
+  background: #e0f2fe;
+  border: 1.5px solid #0284c7;
+  color: #0c4a6e;
+  border-radius: 6px;
+  padding: 0.38rem 0.8rem;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.mador-names-window {
+  background: #ffffff;
+  border: 2px solid #0f4c81;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  box-shadow: 0 6px 16px rgba(15, 76, 129, 0.12);
+}
+
+.mador-window-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.mador-window-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f4c81;
+  white-space: nowrap;
+}
+
+.footer-label {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.signature-pad-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+#signatureCanvas {
+  background: #ffffff;
+  border: 1.5px dashed #64748b;
+  border-radius: 6px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.btn-clear-sig {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.form-alert {
+  margin-top: 1.2rem;
+  padding: 0.65rem 1rem;
+  border-radius: 6px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.form-alert.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.form-alert.success {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.sheet-actions {
+  margin-top: 1.6rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.btn {
+  padding: 0.6rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: #0f4c81;
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: #334155;
+  color: #ffffff;
+}
+
+.btn-outline {
+  background: #ffffff;
+  color: #1f2937;
+  border-color: #cbd5e1;
+}
+
+/* תיבת הגדרת 3 אנשי קשר ל-WhatsApp (מוגנת ב-PIN) */
+.wa-config-panel {
+  background: #f8fafc;
+  border: 2px solid #0f4c81;
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.wa-config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 1rem;
+  color: #0f4c81;
+}
+
+.wa-contacts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.wa-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.wa-contact-num {
+  font-weight: 700;
+  min-width: 90px;
+  font-size: 0.92rem;
+}
+
+.wa-contact-row input {
+  flex: 1;
+  min-width: 180px;
+  padding: 0.45rem 0.7rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.wa-config-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* חלונית שליחת אישור ב-WhatsApp לאחר שמירה */
+.whatsapp-confirm-card {
+  margin-top: 1.4rem;
+  background: #f0fdf4;
+  border: 2px solid #22c55e;
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.wa-recipients-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.wa-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.wa-card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #14532d;
+}
+
+.btn-whatsapp-send {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #16a34a;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 0.65rem 1.3rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+}
+
+.btn-whatsapp-send:hover {
+  background: #15803d;
+}
+
+.wa-message-preview {
+  background: #ffffff;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 0.7rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  color: #0f172a;
+}
+
+/* פאנל מנהל — מאגר נתונים */
+.admin-db-section {
+  margin-top: 2.5rem;
+  padding-top: 1.8rem;
+  border-top: 3px solid #0f4c81;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-db-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-db-header h2 {
+  font-size: 1.4rem;
+  color: #0f172a;
+}
+
+.admin-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-wa-config-bar {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.admin-wa-config-bar input {
+  padding: 0.45rem 0.75rem;
+  border: 1.5px solid #94a3b8;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  min-width: 240px;
+}
+
+.wa-phone-status {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #15803d;
+}
+
+.admin-search-bar input {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.admin-records-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-records-table th,
+.admin-records-table td {
+  border: 1px solid #cbd5e1;
+  padding: 0.6rem 0.65rem;
+  text-align: right;
+  vertical-align: top;
+}
+
+.admin-records-table th {
+  background: #1e293b;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.admin-records-table tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.btn-wa-row {
+  display: inline-block;
+  background: #16a34a;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.btn-del-row {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  border-radius: 5px;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 0.5rem;
+  }
+
+  .official-sheet {
+    padding: 1rem;
+  }
+
+  .prika-main-table,
+  .prika-main-table thead,
+  .prika-main-table tbody,
+  .prika-main-table tr,
+  .prika-main-table td {
+    display: block;
+    width: 100% !important;
+  }
+
+  .prika-main-table thead {
+    display: none;
+  }
+
+  .prika-main-table td {
+    border-bottom: 1px solid #cbd5e1;
+    padding: 0.75rem;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+    padding: 0;
+  }
+
+  .official-sheet {
+    box-shadow: none;
+    border: none;
+    max-width: 100%;
+    padding: 0.5cm;
+  }
+
+  .table-dropdown {
+    border: none;
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0;
+  }
+
+  #signatureCanvas {
+    border: none;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
