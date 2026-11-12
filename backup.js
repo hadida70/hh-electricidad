@@ -39,3 +39,4 @@ function startBackups(db, dbPath) {
 }
 
 module.exports = { startBackups };
+
