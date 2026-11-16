@@ -160,12 +160,38 @@ db.prepare(
   JSON.stringify([
     {
       name: process.env.DEFAULT_WA_NAME || '',
-      phone: String(process.env.DEFAULT_WA_PHONE || '').replace(/\D/g, '')
-    },
-    { name: '', phone: '' },
-    { name: '', phone: '' }
+      phone: String(process.env.DEFAULT_WA_PHONE || '').replace(/\D/g, ''),
+      active: Boolean(process.env.DEFAULT_WA_PHONE)
+    }
   ])
 );
+
+function normalizeWhatsappContacts(rawList) {
+  const list = Array.isArray(rawList)
+    ? rawList
+        .map((c) => ({
+          name: String((c && c.name) || '').trim(),
+          phone: String((c && c.phone) || '').replace(/[^\d+]/g, '').trim(),
+          active: Boolean(c && c.active)
+        }))
+        .filter((c) => c.name !== '' || c.phone !== '')
+    : [];
+
+  // Asegurar exactamente un contacto activo entre los que tienen teléfono
+  let foundActive = false;
+  for (const c of list) {
+    if (c.active && c.phone !== '' && !foundActive) {
+      foundActive = true;
+    } else {
+      c.active = false;
+    }
+  }
+  if (!foundActive) {
+    const firstWithPhone = list.find((c) => c.phone !== '');
+    if (firstWithPhone) firstWithPhone.active = true;
+  }
+  return list;
+}
 
 function getSettings() {
   const row = db.prepare(`SELECT value FROM settings WHERE key = 'whatsapp_contacts'`).get();
@@ -175,14 +201,8 @@ function getSettings() {
   } catch {
     contacts = [];
   }
-  while (contacts.length < 3) {
-    contacts.push({ name: '', phone: '' });
-  }
   return {
-    whatsapp_contacts: contacts.slice(0, 3).map((c) => ({
-      name: String((c && c.name) || '').trim(),
-      phone: String((c && c.phone) || '').trim()
-    }))
+    whatsapp_contacts: normalizeWhatsappContacts(contacts)
   };
 }
 
@@ -193,13 +213,7 @@ function updateSettings(newSettings = {}) {
   }
 
   if (Array.isArray(newSettings.whatsapp_contacts)) {
-    const cleanContacts = newSettings.whatsapp_contacts.slice(0, 3).map((c) => ({
-      name: String((c && c.name) || '').trim(),
-      phone: String((c && c.phone) || '').replace(/[^\d+]/g, '').trim()
-    }));
-    while (cleanContacts.length < 3) {
-      cleanContacts.push({ name: '', phone: '' });
-    }
+    const cleanContacts = normalizeWhatsappContacts(newSettings.whatsapp_contacts);
     db.prepare(`INSERT OR REPLACE INTO settings (key, value) VALUES ('whatsapp_contacts', ?)`).run(
       JSON.stringify(cleanContacts)
     );

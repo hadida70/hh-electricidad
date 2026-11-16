@@ -22,32 +22,19 @@
         </button>
       </div>
 
-      <!-- תיבת הגדרת עד 3 אנשי קשר ל-WhatsApp (נפתחת עם PIN) -->
+      <!-- תיבת הגדרת אנשי קשר ל-WhatsApp ובחירת איש קשר פעיל (נפתחת עם PIN) -->
       <div id="whatsappConfigBox" class="wa-config-panel hidden no-print">
         <div class="wa-config-header">
-          <strong>📱 הגדרת עד 3 אנשי קשר לקבלת אישורים ב-WhatsApp:</strong>
+          <strong>📱 הגדרת אנשי קשר ב-WhatsApp ובחירת המשתמש הפעיל:</strong>
           <button type="button" id="btnCloseWhatsappConfig" class="btn-outline" style="padding: 0.25rem 0.6rem; font-size: 0.82rem;">
             סגור ✕
           </button>
         </div>
-        <div class="wa-contacts-grid">
-          <div class="wa-contact-row">
-            <span class="wa-contact-num">איש קשר 1:</span>
-            <input type="text" id="waName1" placeholder="שם איש קשר 1..." autocomplete="off" />
-            <input type="text" id="waPhone1" dir="ltr" placeholder="מספר WhatsApp (כגון: 0501234567)..." autocomplete="off" />
-          </div>
-          <div class="wa-contact-row">
-            <span class="wa-contact-num">איש קשר 2:</span>
-            <input type="text" id="waName2" placeholder="שם איש קשר 2..." autocomplete="off" />
-            <input type="text" id="waPhone2" dir="ltr" placeholder="מספר WhatsApp (כגון: 0501234567)..." autocomplete="off" />
-          </div>
-          <div class="wa-contact-row">
-            <span class="wa-contact-num">איש קשר 3:</span>
-            <input type="text" id="waName3" placeholder="שם איש קשר 3..." autocomplete="off" />
-            <input type="text" id="waPhone3" dir="ltr" placeholder="מספר WhatsApp (כגון: 0501234567)..." autocomplete="off" />
-          </div>
-        </div>
+        <div id="waContactsList" class="wa-contacts-grid"></div>
         <div class="wa-config-actions">
+          <button type="button" id="btnAddWhatsappContact" class="btn-outline">
+            ➕ הוסף איש קשר
+          </button>
           <button type="button" id="btnSaveWhatsappContacts" class="btn-inline-save">
             💾 שמור אנשי קשר
           </button>
@@ -324,7 +311,7 @@
       <!-- חלונית שליחת הודעה מוכנה ל-WhatsApp (מופיעה רק עבור הפעולה שנשמרה כעת!) -->
       <div id="whatsappConfirmCard" class="whatsapp-confirm-card hidden no-print">
         <div class="wa-card-header">
-          <span class="wa-card-title">✅ הפעולה נשמרה! בחר למי לשלוח את האישור ב-WhatsApp:</span>
+          <span class="wa-card-title">✅ הפעולה נשמרה! שלח את האישור ב-WhatsApp:</span>
         </div>
         <div id="whatsappRecipientsButtons" class="wa-recipients-buttons"></div>
         <pre id="whatsappMessagePreview" class="wa-message-preview"></pre>

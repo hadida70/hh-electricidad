@@ -559,6 +559,35 @@ body {
   align-items: center;
   gap: 0.55rem;
   flex-wrap: wrap;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.wa-contact-row.is-active {
+  background: #f0fdf4;
+  border-color: #22c55e;
+}
+
+.wa-active-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #14532d;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.wa-active-label input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  min-width: auto;
+  flex: none;
+  accent-color: #16a34a;
+  cursor: pointer;
 }
 
 .wa-contact-num {

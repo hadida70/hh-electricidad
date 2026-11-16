@@ -754,12 +754,7 @@ async function verifyPinOnServer(pin) {
   }
 }
 const whatsappConfigBox = document.getElementById('whatsappConfigBox');
-const waName1 = document.getElementById('waName1');
-const waPhone1 = document.getElementById('waPhone1');
-const waName2 = document.getElementById('waName2');
-const waPhone2 = document.getElementById('waPhone2');
-const waName3 = document.getElementById('waName3');
-const waPhone3 = document.getElementById('waPhone3');
+const waContactsList = document.getElementById('waContactsList');
 const waPhoneSavedStatus = document.getElementById('waPhoneSavedStatus');
 
 const whatsappConfirmCard = document.getElementById('whatsappConfirmCard');
@@ -770,11 +765,8 @@ const adminRecordsCount = document.getElementById('adminRecordsCount');
 const adminRecordsTbody = document.getElementById('adminRecordsTbody');
 const adminSearchInput = document.getElementById('adminSearchInput');
 
-let whatsappContacts = [
-  { name: '', phone: '' },
-  { name: '', phone: '' },
-  { name: '', phone: '' }
-];
+let whatsappContacts = [];
+let editingWhatsappContacts = [];
 let currentSavedRecordForWa = null;
 let allSavedRecords = [];
 
@@ -850,48 +842,105 @@ function buildWhatsappUrlForPhone(rec, rawPhone) {
 function renderCurrentEntryWhatsappButtons() {
   if (!currentSavedRecordForWa) return;
 
-  const activeContacts = whatsappContacts.filter((c) => c && String(c.phone || '').trim() !== '');
+  const contactsWithPhone = whatsappContacts.filter((c) => c && String(c.phone || '').trim() !== '');
+  const activeContact =
+    contactsWithPhone.find((c) => Boolean(c.active)) || contactsWithPhone[0] || null;
+
   const waMsg = buildWhatsappMessage(currentSavedRecordForWa);
   whatsappMessagePreview.textContent = waMsg;
 
-  if (activeContacts.length === 0) {
+  if (!activeContact) {
     const fallbackUrl = buildWhatsappUrlForPhone(currentSavedRecordForWa, '');
     whatsappRecipientsButtons.innerHTML = `
       <a href="${fallbackUrl}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-send">
         📲 שלח אישור ב-WhatsApp
       </a>
       <span style="font-size:0.88rem; color:#14532d; align-self:center;">
-        (ניתן להגדיר עד 3 אנשי קשר קבועים בכפתור ⚙️ למעלה עם קוד PIN)
+        (ניתן להגדיר אנשי קשר בכפתור ⚙️ למעלה עם קוד PIN)
       </span>
     `;
     return;
   }
 
-  // מציג כפתור אחד אם הוגדר איש קשר אחד, או 2 / 3 כפתורים לפי אנשי הקשר שהוגדרו (עם השם ומספר ה-WhatsApp)
-  whatsappRecipientsButtons.innerHTML = activeContacts
-    .map((c) => {
-      const url = buildWhatsappUrlForPhone(currentSavedRecordForWa, c.phone);
-      const labelName = c.name ? escapeHtml(c.name) : 'איש קשר';
-      const labelPhone = escapeHtml(c.phone);
+  // מציג כפתור אחד בלבד עבור איש הקשר הפעיל שנבחר בהגדרות
+  const url = buildWhatsappUrlForPhone(currentSavedRecordForWa, activeContact.phone);
+  const label = activeContact.name
+    ? `📲 שלח אישור ב-WhatsApp ל-${escapeHtml(activeContact.name)}`
+    : '📲 שלח אישור ב-WhatsApp';
+  whatsappRecipientsButtons.innerHTML = `
+    <a href="${url}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-send">
+      ${label}
+    </a>
+  `;
+}
+
+function collectEditingContactsFromDom() {
+  if (!waContactsList) return [];
+  return Array.from(waContactsList.querySelectorAll('.wa-contact-row')).map((row) => ({
+    name: (row.querySelector('.wa-name-input')?.value || '').trim(),
+    phone: (row.querySelector('.wa-phone-input')?.value || '').trim(),
+    active: Boolean(row.querySelector('.wa-active-radio')?.checked)
+  }));
+}
+
+function renderWhatsappContactsEditor() {
+  if (!waContactsList) return;
+  const list = editingWhatsappContacts.length
+    ? editingWhatsappContacts
+    : [{ name: '', phone: '', active: true }];
+
+  waContactsList.innerHTML = list
+    .map((c, idx) => {
+      const isChecked = Boolean(c.active);
       return `
-        <a href="${url}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-send">
-          📲 שלח ל-${labelName} (<span dir="ltr">${labelPhone}</span>)
-        </a>
+        <div class="wa-contact-row${isChecked ? ' is-active' : ''}" data-idx="${idx}">
+          <label class="wa-active-label" title="בחר כאיש קשר פעיל לשליחת הודעות">
+            <input type="radio" name="waActiveContact" class="wa-active-radio" ${isChecked ? 'checked' : ''} />
+            <span>פעיל</span>
+          </label>
+          <input type="text" class="wa-name-input" value="${escapeHtml(c.name || '')}" placeholder="שם איש קשר ${idx + 1}..." autocomplete="off" />
+          <input type="text" class="wa-phone-input" dir="ltr" value="${escapeHtml(c.phone || '')}" placeholder="מספר WhatsApp (כגון: 0501234567)..." autocomplete="off" />
+          <button type="button" class="chip-del-btn wa-del-row" data-del-wa-idx="${idx}" title="מחק איש קשר">✕</button>
+        </div>
       `;
     })
     .join('');
+
+  waContactsList.querySelectorAll('.wa-active-radio').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      waContactsList.querySelectorAll('.wa-contact-row').forEach((row) => {
+        const r = row.querySelector('.wa-active-radio');
+        row.classList.toggle('is-active', Boolean(r && r.checked));
+      });
+    });
+  });
+
+  waContactsList.querySelectorAll('[data-del-wa-idx]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      editingWhatsappContacts = collectEditingContactsFromDom();
+      const idx = Number(btn.dataset.delWaIdx);
+      const removedWasActive = Boolean(editingWhatsappContacts[idx]?.active);
+      editingWhatsappContacts.splice(idx, 1);
+      if (editingWhatsappContacts.length === 0) {
+        editingWhatsappContacts.push({ name: '', phone: '', active: true });
+      } else if (removedWasActive) {
+        editingWhatsappContacts[0].active = true;
+      }
+      renderWhatsappContactsEditor();
+    });
+  });
 }
 
 function populateContactsInputs() {
-  const c1 = whatsappContacts[0] || { name: '', phone: '' };
-  const c2 = whatsappContacts[1] || { name: '', phone: '' };
-  const c3 = whatsappContacts[2] || { name: '', phone: '' };
-  waName1.value = c1.name || '';
-  waPhone1.value = c1.phone || '';
-  waName2.value = c2.name || '';
-  waPhone2.value = c2.phone || '';
-  waName3.value = c3.name || '';
-  waPhone3.value = c3.phone || '';
+  editingWhatsappContacts = whatsappContacts.map((c) => ({
+    name: c.name || '',
+    phone: c.phone || '',
+    active: Boolean(c.active)
+  }));
+  if (editingWhatsappContacts.length === 0) {
+    editingWhatsappContacts.push({ name: '', phone: '', active: true });
+  }
+  renderWhatsappContactsEditor();
 }
 
 async function loadSettings() {
@@ -927,19 +976,26 @@ document.getElementById('btnOpenWhatsappConfig').addEventListener('click', async
   verifiedPin = enteredPin.trim();
   populateContactsInputs();
   whatsappConfigBox.classList.remove('hidden');
-  waName1.focus();
+  const firstInput = waContactsList.querySelector('.wa-name-input');
+  if (firstInput) firstInput.focus();
 });
 
 document.getElementById('btnCloseWhatsappConfig').addEventListener('click', () => {
   whatsappConfigBox.classList.add('hidden');
 });
 
+document.getElementById('btnAddWhatsappContact').addEventListener('click', () => {
+  editingWhatsappContacts = collectEditingContactsFromDom();
+  const hasActive = editingWhatsappContacts.some((c) => c.active);
+  editingWhatsappContacts.push({ name: '', phone: '', active: !hasActive });
+  renderWhatsappContactsEditor();
+  const inputs = waContactsList.querySelectorAll('.wa-name-input');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+});
+
 document.getElementById('btnSaveWhatsappContacts').addEventListener('click', async () => {
-  const newContacts = [
-    { name: waName1.value.trim(), phone: waPhone1.value.trim() },
-    { name: waName2.value.trim(), phone: waPhone2.value.trim() },
-    { name: waName3.value.trim(), phone: waPhone3.value.trim() }
-  ];
+  const rawContacts = collectEditingContactsFromDom();
+  const newContacts = rawContacts.filter((c) => c.name !== '' || c.phone !== '');
 
   try {
     const res = await fetch('/api/settings', {
