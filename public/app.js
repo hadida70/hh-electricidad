@@ -441,7 +441,7 @@ function renderAddedProductsTable() {
       (item, idx) => `
       <tr>
         <td><strong>${escapeHtml(item.product)}</strong></td>
-        <td dir="ltr" style="text-align:right; font-family:monospace; font-weight:700;">${escapeHtml(item.serial)}</td>
+        <td dir="ltr" style="text-align:right; font-family:monospace; font-weight:700;">${item.serial ? escapeHtml(item.serial) : '-'}</td>
         <td class="no-print" style="width:28px; text-align:center;">
           <button type="button" class="chip-del-btn" data-remove-ps-idx="${idx}" title="הסר">✕</button>
         </td>
@@ -466,11 +466,6 @@ function addProductAndSerialRow() {
   if (!product || product === '__ADD_NEW__') {
     showAlert('נא לבחור מוצר מהתפריט הנפתח (או להוסיף מוצר ב-➕)', 'error');
     itemProductSelect.focus();
-    return;
-  }
-  if (!serial) {
-    showAlert('נא להקליד מספר סידורי (Serial)', 'error');
-    itemSerialInput.focus();
     return;
   }
 
@@ -813,7 +808,8 @@ function buildWhatsappMessage(rec) {
   if (items.length > 0) {
     lines.push(`📦 *מוצרים ומספר סידורי:*`);
     items.forEach((it, idx) => {
-      lines.push(`  ${idx + 1}. ${it.product} | סידורי: ${it.serial}`);
+      const serialPart = it.serial ? ` | סידורי: ${it.serial}` : '';
+      lines.push(`  ${idx + 1}. ${it.product}${serialPart}`);
     });
   }
 
@@ -1081,9 +1077,10 @@ function renderAdminRecordsTable() {
       }
 
       const itemsHtml = items
-        .map(
-          (it) =>
-            `<div>📦 <strong>${escapeHtml(it.product)}</strong> — סידורי: <code dir="ltr">${escapeHtml(it.serial)}</code></div>`
+        .map((it) =>
+          it.serial
+            ? `<div>📦 <strong>${escapeHtml(it.product)}</strong> — סידורי: <code dir="ltr">${escapeHtml(it.serial)}</code></div>`
+            : `<div>📦 <strong>${escapeHtml(it.product)}</strong></div>`
         )
         .join('');
 
@@ -1171,7 +1168,7 @@ document.getElementById('btnExportCsv').addEventListener('click', () => {
     } catch {
       items = [];
     }
-    const itemsStr = items.map((i) => `${i.product} (${i.serial})`).join(' | ');
+    const itemsStr = items.map((i) => (i.serial ? `${i.product} (${i.serial})` : i.product)).join(' | ');
     return [
       r.id,
       r.machsan_sholeach,
