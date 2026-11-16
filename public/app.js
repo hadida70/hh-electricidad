@@ -1272,3 +1272,80 @@ loadNahagim();
 loadMutzarimCatalog();
 loadMachsanaim();
 loadAllSavedRecords();
+
+// ==========================================
+// 7. PWA: רישום Service Worker וכפתור התקנה ל-iPhone ו-Android
+// ==========================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
+(function initPwaInstall() {
+  const btnInstallPwa = document.getElementById('btnInstallPwa');
+  const pwaInstallBox = document.getElementById('pwaInstallBox');
+  const btnClosePwaInstall = document.getElementById('btnClosePwaInstall');
+  const pwaDirectInstallWrap = document.getElementById('pwaDirectInstallWrap');
+  const btnTriggerNativeInstall = document.getElementById('btnTriggerNativeInstall');
+  const pwaGuideAndroid = document.getElementById('pwaGuideAndroid');
+  const pwaGuideIos = document.getElementById('pwaGuideIos');
+  if (!btnInstallPwa || !pwaInstallBox) return;
+
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isStandalone) {
+    btnInstallPwa.classList.add('hidden');
+    return;
+  }
+
+  const ua = navigator.userAgent || '';
+  const isIos = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/i.test(ua);
+  if (isIos && pwaGuideIos) pwaGuideIos.classList.add('is-highlighted');
+  if (isAndroid && pwaGuideAndroid) pwaGuideAndroid.classList.add('is-highlighted');
+
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (pwaDirectInstallWrap) pwaDirectInstallWrap.classList.remove('hidden');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    pwaInstallBox.classList.add('hidden');
+    btnInstallPwa.classList.add('hidden');
+  });
+
+  async function runNativePrompt() {
+    if (!deferredPrompt) return false;
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
+    if (choice && choice.outcome === 'accepted') {
+      deferredPrompt = null;
+      pwaInstallBox.classList.add('hidden');
+      return true;
+    }
+    return false;
+  }
+
+  btnInstallPwa.addEventListener('click', async () => {
+    // באנדרואיד/כרום אם יש חלון התקנה מובנה מוכן — פותח גם אותו וגם את ההוראות
+    if (deferredPrompt) {
+      await runNativePrompt();
+      return;
+    }
+    pwaInstallBox.classList.toggle('hidden');
+  });
+
+  if (btnTriggerNativeInstall) {
+    btnTriggerNativeInstall.addEventListener('click', runNativePrompt);
+  }
+  if (btnClosePwaInstall) {
+    btnClosePwaInstall.addEventListener('click', () => {
+      pwaInstallBox.classList.add('hidden');
+    });
+  }
+})();
