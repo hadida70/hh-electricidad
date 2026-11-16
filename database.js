@@ -231,6 +231,12 @@ function getAdminMadorPins(adminPin) {
   return getMadorPinsMap();
 }
 
+function getAdminName() {
+  const row = db.prepare(`SELECT value FROM settings WHERE key = 'admin_name'`).get();
+  const val = String((row && row.value) || '').trim();
+  return val || 'מנהל המערכת';
+}
+
 function getSettings() {
   const row = db.prepare(`SELECT value FROM settings WHERE key = 'whatsapp_contacts'`).get();
   let contacts = [];
@@ -246,7 +252,8 @@ function getSettings() {
   }
   return {
     whatsapp_contacts: normalizeWhatsappContacts(contacts),
-    configured_madores: configuredMadores
+    configured_madores: configuredMadores,
+    admin_name: getAdminName()
   };
 }
 
@@ -270,6 +277,12 @@ function updateSettings(newSettings = {}) {
     }
     db.prepare(`INSERT OR REPLACE INTO settings (key, value) VALUES ('mador_pins', ?)`).run(
       JSON.stringify(cleanPins)
+    );
+  }
+
+  if (typeof newSettings.admin_name === 'string') {
+    db.prepare(`INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_name', ?)`).run(
+      newSettings.admin_name.trim()
     );
   }
 

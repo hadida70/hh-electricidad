@@ -1012,6 +1012,10 @@ async function loadSettings() {
         configuredMadores = data.configured_madores;
         updateMadorUiState();
       }
+      if (typeof data.admin_name === 'string') {
+        currentAdminName = data.admin_name || 'מנהל המערכת';
+        if (adminNameDisplay) adminNameDisplay.textContent = currentAdminName;
+      }
       populateContactsInputs();
       if (currentSavedRecordForWa) {
         renderCurrentEntryWhatsappButtons();
@@ -1126,37 +1130,182 @@ document.getElementById('btnSaveWhatsappContacts').addEventListener('click', asy
   }
 });
 
+const publicOperationsSection = document.getElementById('publicOperationsSection');
+const btnOpenAdminAccess = document.getElementById('btnOpenAdminAccess');
+const btnCloseAdminAccess = document.getElementById('btnCloseAdminAccess');
+const adminNameDisplay = document.getElementById('adminNameDisplay');
+const btnEditAdminName = document.getElementById('btnEditAdminName');
+const adminNameEditWrap = document.getElementById('adminNameEditWrap');
+const adminNameInput = document.getElementById('adminNameInput');
+const btnSaveAdminName = document.getElementById('btnSaveAdminName');
+const btnCancelAdminName = document.getElementById('btnCancelAdminName');
+
+const adminFilterMador = document.getElementById('adminFilterMador');
+const adminFilterDateFrom = document.getElementById('adminFilterDateFrom');
+const adminFilterDateTo = document.getElementById('adminFilterDateTo');
+const adminFilterMenahel = document.getElementById('adminFilterMenahel');
+const adminFilterNahag = document.getElementById('adminFilterNahag');
+const btnClearAdminFilters = document.getElementById('btnClearAdminFilters');
+
+let isAdminUnlocked = false;
+let currentAdminName = 'מנהל המערכת';
+
+if (btnOpenAdminAccess) {
+  btnOpenAdminAccess.addEventListener('click', async () => {
+    if (isAdminUnlocked && publicOperationsSection) {
+      publicOperationsSection.classList.remove('hidden');
+      publicOperationsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    const enteredPin = window.prompt('נא להזין קוד PIN לכניסת מנהל:');
+    if (enteredPin === null) return;
+    const okPin = await verifyPinOnServer(enteredPin);
+    if (!okPin) {
+      window.alert('❌ קוד PIN שגוי!');
+      return;
+    }
+    verifiedPin = enteredPin.trim();
+    isAdminUnlocked = true;
+    if (publicOperationsSection) {
+      publicOperationsSection.classList.remove('hidden');
+    }
+    await loadAllSavedRecords();
+    if (publicOperationsSection) {
+      publicOperationsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+}
+
+if (btnCloseAdminAccess) {
+  btnCloseAdminAccess.addEventListener('click', () => {
+    isAdminUnlocked = false;
+    allSavedRecords = [];
+    if (publicOperationsSection) {
+      publicOperationsSection.classList.add('hidden');
+    }
+  });
+}
+
+if (btnEditAdminName) {
+  btnEditAdminName.addEventListener('click', () => {
+    adminNameInput.value = currentAdminName === 'מנהל המערכת' ? '' : currentAdminName;
+    adminNameEditWrap.classList.remove('hidden');
+    adminNameInput.focus();
+  });
+}
+
+if (btnCancelAdminName) {
+  btnCancelAdminName.addEventListener('click', () => {
+    adminNameEditWrap.classList.add('hidden');
+  });
+}
+
+if (btnSaveAdminName) {
+  btnSaveAdminName.addEventListener('click', async () => {
+    const newName = adminNameInput.value.trim();
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: verifiedPin, admin_name: newName })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        window.alert(data.error || 'שגיאה בשמירת שם המנהל');
+        return;
+      }
+      currentAdminName = data.admin_name || 'מנהל המערכת';
+      adminNameDisplay.textContent = currentAdminName;
+      adminNameEditWrap.classList.add('hidden');
+    } catch {
+      window.alert('שגיאת תקשורת עם השרת.');
+    }
+  });
+}
+
 document.getElementById('btnRefreshAdmin').addEventListener('click', loadAllSavedRecords);
 adminSearchInput.addEventListener('input', renderAdminRecordsTable);
+[adminFilterMador, adminFilterDateFrom, adminFilterDateTo, adminFilterMenahel, adminFilterNahag].forEach((el) => {
+  if (el) el.addEventListener('change', renderAdminRecordsTable);
+});
+if (btnClearAdminFilters) {
+  btnClearAdminFilters.addEventListener('click', () => {
+    if (adminFilterMador) adminFilterMador.value = '';
+    if (adminFilterDateFrom) adminFilterDateFrom.value = '';
+    if (adminFilterDateTo) adminFilterDateTo.value = '';
+    if (adminFilterMenahel) adminFilterMenahel.value = '';
+    if (adminFilterNahag) adminFilterNahag.value = '';
+    if (adminSearchInput) adminSearchInput.value = '';
+    renderAdminRecordsTable();
+  });
+}
+
+function populateAdminFilterDropdowns() {
+  if (adminFilterMenahel) {
+    const prev = adminFilterMenahel.value;
+    const names = Array.from(new Set(allSavedRecords.map((r) => (r.machsan_sholeach || '').trim()).filter(Boolean))).sort();
+    adminFilterMenahel.innerHTML =
+      `<option value="">כל מנהלי העבודה</option>` +
+      names.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+    if (prev && names.includes(prev)) adminFilterMenahel.value = prev;
+  }
+  if (adminFilterNahag) {
+    const prev = adminFilterNahag.value;
+    const drivers = Array.from(new Set(allSavedRecords.map((r) => (r.shem_nahag || '').trim()).filter(Boolean))).sort();
+    adminFilterNahag.innerHTML =
+      `<option value="">כל הנהגים</option>` +
+      drivers.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+    if (prev && drivers.includes(prev)) adminFilterNahag.value = prev;
+  }
+}
+
+function getFilteredAdminRecords() {
+  const madorVal = adminFilterMador ? adminFilterMador.value : '';
+  const dateFrom = adminFilterDateFrom ? adminFilterDateFrom.value : '';
+  const dateTo = adminFilterDateTo ? adminFilterDateTo.value : '';
+  const menahelVal = adminFilterMenahel ? adminFilterMenahel.value : '';
+  const nahagVal = adminFilterNahag ? adminFilterNahag.value : '';
+  const q = (adminSearchInput.value || '').trim().toLowerCase();
+
+  return allSavedRecords.filter((r) => {
+    if (madorVal && !String(r.shem_machsanai || '').includes(madorVal)) return false;
+    const recDate = String(r.taarich_prika || '').slice(0, 10);
+    if (dateFrom && (!recDate || recDate < dateFrom)) return false;
+    if (dateTo && (!recDate || recDate > dateTo)) return false;
+    if (menahelVal && String(r.machsan_sholeach || '').trim() !== menahelVal) return false;
+    if (nahagVal && String(r.shem_nahag || '').trim() !== nahagVal) return false;
+    if (q) {
+      const blob = [
+        r.id,
+        r.machsan_sholeach,
+        r.shem_nahag,
+        r.taarich_prika,
+        r.hearot,
+        r.mutzarim_json,
+        r.shem_machsanai
+      ]
+        .join(' ')
+        .toLowerCase();
+      if (!blob.includes(q)) return false;
+    }
+    return true;
+  });
+}
 
 function renderAdminRecordsTable() {
+  const filtered = getFilteredAdminRecords();
   if (adminRecordsCount) {
-    adminRecordsCount.textContent = String(allSavedRecords.length);
+    adminRecordsCount.textContent =
+      filtered.length === allSavedRecords.length
+        ? String(allSavedRecords.length)
+        : `${filtered.length} / ${allSavedRecords.length}`;
   }
-
-  const q = (adminSearchInput.value || '').trim().toLowerCase();
-  const filtered = q
-    ? allSavedRecords.filter((r) => {
-        const blob = [
-          r.id,
-          r.machsan_sholeach,
-          r.shem_nahag,
-          r.taarich_prika,
-          r.hearot,
-          r.mutzarim_json,
-          r.shem_machsanai
-        ]
-          .join(' ')
-          .toLowerCase();
-        return blob.includes(q);
-      })
-    : allSavedRecords;
 
   if (filtered.length === 0) {
     adminRecordsTbody.innerHTML = `
       <tr>
         <td colspan="8" style="text-align:center; padding: 1.2rem; color: #64748b;">
-          אין עדיין פעולות שמורות במערכת.
+          לא נמצאו פעולות התואמות לסינון.
         </td>
       </tr>
     `;
@@ -1240,6 +1389,7 @@ function renderAdminRecordsTable() {
       });
       if (res.ok) {
         allSavedRecords = await res.json();
+        populateAdminFilterDropdowns();
         renderAdminRecordsTable();
       } else {
         const errData = await res.json().catch(() => ({}));
@@ -1250,10 +1400,14 @@ function renderAdminRecordsTable() {
 }
 
 async function loadAllSavedRecords() {
+  if (!isAdminUnlocked || !verifiedPin) return;
   try {
-    const res = await fetch('/api/ishur-prika');
+    const res = await fetch('/api/ishur-prika', {
+      headers: { 'x-admin-pin': verifiedPin }
+    });
     if (res.ok) {
       allSavedRecords = await res.json();
+      populateAdminFilterDropdowns();
       renderAdminRecordsTable();
     }
   } catch {
@@ -1262,9 +1416,10 @@ async function loadAllSavedRecords() {
 }
 
 document.getElementById('btnExportCsv').addEventListener('click', () => {
-  if (allSavedRecords.length === 0) return;
+  const exportList = getFilteredAdminRecords();
+  if (exportList.length === 0) return;
   const headers = ['ID', 'שם מנהל עבודה', 'שם הנהג', 'תאריך פריקה', 'מוצרים וסידורי', 'הערות', 'שם המחסנאי המאשר', 'תאריך יצירה'];
-  const rows = allSavedRecords.map((r) => {
+  const rows = exportList.map((r) => {
     let items = [];
     try {
       items = JSON.parse(r.mutzarim_json || '[]');
@@ -1365,9 +1520,11 @@ form.addEventListener('submit', async (e) => {
     renderCurrentEntryWhatsappButtons();
     whatsappConfirmCard.classList.remove('hidden');
 
-    await loadAllSavedRecords();
+    if (isAdminUnlocked) {
+      await loadAllSavedRecords();
+    }
 
-    showAlert('✅ אישור הפריקה נשמר! בחר למטה למי לשלוח את ההודעה ב-WhatsApp.', 'success');
+    showAlert('✅ אישור הפריקה נשמר! שלח את ההודעה ב-WhatsApp למטה.', 'success');
     whatsappConfirmCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch {
     showAlert('שגיאת תקשורת עם השרת.', 'error');
@@ -1381,7 +1538,6 @@ loadMenahaleiAvoda();
 loadNahagim();
 loadMutzarimCatalog();
 loadMachsanaim();
-loadAllSavedRecords();
 
 // ==========================================
 // 7. PWA: רישום Service Worker וכפתור התקנה ל-iPhone ו-Android

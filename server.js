@@ -184,6 +184,10 @@ const server = http.createServer(async (req, res) => {
     // API: טופס אישור פריקה
     if (pathname === '/api/ishur-prika') {
       if (req.method === 'GET') {
+        const pin = parsedUrl.searchParams.get('pin') || req.headers['x-admin-pin'] || '';
+        if (!verifyPin(pin)) {
+          return sendJson(res, 403, { error: 'נדרשת גישת מנהל לצפייה ברשומות' });
+        }
         return sendJson(res, 200, getAllRecords());
       }
       if (req.method === 'POST') {

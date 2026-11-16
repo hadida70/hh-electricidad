@@ -29,6 +29,13 @@
           </button>
           <button
             type="button"
+            id="btnOpenAdminAccess"
+            class="btn-admin-access"
+          >
+            🔐 כניסת מנהל
+          </button>
+          <button
+            type="button"
             id="btnOpenWhatsappConfig"
             class="btn-admin-toggle"
           >
@@ -411,10 +418,21 @@
         </button>
       </div>
 
-      <!-- רשימת כל הפעולות השמורות (גלויה לכולם ללא צורך במנהל) -->
-      <section id="publicOperationsSection" class="admin-db-section no-print">
+      <!-- אזור מנהל: צפייה בכל הרשומות עם סינון לפי מדור, תאריך, מנהל עבודה ונהג (מוגן ב-PIN) -->
+      <section id="publicOperationsSection" class="admin-db-section hidden no-print">
         <div class="admin-db-header">
-          <h2>📋 כל הפעולות השמורות במערכת (<span id="adminRecordsCount">0</span>)</h2>
+          <div>
+            <h2>📋 כל הפעולות השמורות במערכת (<span id="adminRecordsCount">0</span>)</h2>
+            <div class="admin-identity-bar">
+              <span>👤 <strong>מנהל:</strong> <span id="adminNameDisplay">מנהל המערכת</span></span>
+              <button type="button" id="btnEditAdminName" class="btn-outline btn-xs">✏️ ערוך שם</button>
+              <span id="adminNameEditWrap" class="admin-name-edit-wrap hidden">
+                <input type="text" id="adminNameInput" placeholder="שם המנהל..." autocomplete="off" />
+                <button type="button" id="btnSaveAdminName" class="btn-inline-save">שמור</button>
+                <button type="button" id="btnCancelAdminName" class="btn-outline btn-xs">ביטול</button>
+              </span>
+            </div>
+          </div>
           <div class="admin-header-actions">
             <button type="button" id="btnExportCsv" class="btn btn-secondary">
               📥 ייצוא לאקסל (CSV)
@@ -422,15 +440,58 @@
             <button type="button" id="btnRefreshAdmin" class="btn btn-outline">
               🔄 רענן רשימה
             </button>
+            <button type="button" id="btnCloseAdminAccess" class="btn btn-outline">
+              🔒 יציאת מנהל
+            </button>
           </div>
         </div>
 
-        <!-- חיפוש וסינון ברשימת הפעולות -->
+        <!-- מסננים: מדור, תאריך, מנהל עבודה ונהג -->
+        <div class="admin-filters-grid">
+          <div class="admin-filter-field">
+            <label for="adminFilterMador">מדור (קבוצה):</label>
+            <select id="adminFilterMador">
+              <option value="">כל המדורים</option>
+              <option value="8120">8120</option>
+              <option value="8150">8150</option>
+              <option value="8110">8110</option>
+              <option value="8130">8130</option>
+              <option value="8330">8330</option>
+            </select>
+          </div>
+          <div class="admin-filter-field">
+            <label for="adminFilterDateFrom">מתאריך:</label>
+            <input type="date" id="adminFilterDateFrom" />
+          </div>
+          <div class="admin-filter-field">
+            <label for="adminFilterDateTo">עד תאריך:</label>
+            <input type="date" id="adminFilterDateTo" />
+          </div>
+          <div class="admin-filter-field">
+            <label for="adminFilterMenahel">מנהל עבודה:</label>
+            <select id="adminFilterMenahel">
+              <option value="">כל מנהלי העבודה</option>
+            </select>
+          </div>
+          <div class="admin-filter-field">
+            <label for="adminFilterNahag">שם הנהג:</label>
+            <select id="adminFilterNahag">
+              <option value="">כל הנהגים</option>
+            </select>
+          </div>
+          <div class="admin-filter-actions">
+            <button type="button" id="btnClearAdminFilters" class="btn btn-outline">
+              נקה סינון
+            </button>
+          </div>
+        </div>
+
+        <!-- חיפוש חופשי -->
         <div class="admin-search-bar">
           <input
             type="text"
             id="adminSearchInput"
-            placeholder="🔍 חפש לפי שם מנהל עבודה, שם נהג, מוצר, מספר סידורי, מחסנאי מאשר או תאריך..."
+            placeholder="🔍 חיפוש חופשי לפי מוצר, מספר סידורי, מחסנאי מאשר או הערות..."
           />
         </div>
 
