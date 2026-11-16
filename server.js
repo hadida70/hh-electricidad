@@ -5,6 +5,8 @@ const { URL } = require('node:url');
 
 const {
   verifyPin,
+  verifyMadorPin,
+  getAdminMadorPins,
   getSettings,
   updateSettings,
   getMenahaleiAvoda,
@@ -153,6 +155,19 @@ const server = http.createServer(async (req, res) => {
       const body = await readJsonBody(req);
       if (verifyPin(body.pin)) return sendJson(res, 200, { ok: true });
       return sendJson(res, 403, { error: 'קוד PIN שגוי' });
+    }
+
+    // API: verificación de PIN por מדור (grupo)
+    if (pathname === '/api/verify-mador-pin' && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      if (verifyMadorPin(body.mador, body.pin)) return sendJson(res, 200, { ok: true });
+      return sendJson(res, 403, { error: `קוד PIN שגוי עבור מדור ${body.mador || ''}` });
+    }
+
+    // API: obtener PINs por מדור para el panel de configuración (requiere PIN maestro)
+    if (pathname === '/api/admin/mador-pins' && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      return sendJson(res, 200, { mador_pins: getAdminMadorPins(body.pin) });
     }
 
     // API: הגדרות מערכת (מספר WhatsApp לקבלת אישורים)

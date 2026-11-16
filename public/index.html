@@ -83,8 +83,38 @@
           <button type="button" id="btnAddWhatsappContact" class="btn-outline">
             ➕ הוסף איש קשר
           </button>
+        </div>
+
+        <hr class="config-divider" />
+        <div class="wa-config-header">
+          <strong>🔐 קוד PIN לכל מדור (בחירת קבוצה לפני אישור פריקה):</strong>
+        </div>
+        <div class="mador-pins-grid">
+          <div class="mador-pin-item">
+            <label for="madorPin8120">מדור 8120:</label>
+            <input type="text" id="madorPin8120" dir="ltr" inputmode="numeric" placeholder="ללא PIN..." autocomplete="off" />
+          </div>
+          <div class="mador-pin-item">
+            <label for="madorPin8150">מדור 8150:</label>
+            <input type="text" id="madorPin8150" dir="ltr" inputmode="numeric" placeholder="ללא PIN..." autocomplete="off" />
+          </div>
+          <div class="mador-pin-item">
+            <label for="madorPin8110">מדור 8110:</label>
+            <input type="text" id="madorPin8110" dir="ltr" inputmode="numeric" placeholder="ללא PIN..." autocomplete="off" />
+          </div>
+          <div class="mador-pin-item">
+            <label for="madorPin8130">מדור 8130:</label>
+            <input type="text" id="madorPin8130" dir="ltr" inputmode="numeric" placeholder="ללא PIN..." autocomplete="off" />
+          </div>
+          <div class="mador-pin-item">
+            <label for="madorPin8330">מדור 8330:</label>
+            <input type="text" id="madorPin8330" dir="ltr" inputmode="numeric" placeholder="ללא PIN..." autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="wa-config-actions">
           <button type="button" id="btnSaveWhatsappContacts" class="btn-inline-save">
-            💾 שמור אנשי קשר
+            💾 שמור הגדרות
           </button>
           <span id="waPhoneSavedStatus" class="wa-phone-status"></span>
         </div>
@@ -322,6 +352,9 @@
                         <button type="button" class="btn-mador-tab" data-mador="8130">8130</button>
                         <button type="button" class="btn-mador-tab" data-mador="8330">8330</button>
                       </div>
+                    </div>
+                    <div id="madorLockStatus" class="mador-lock-status no-print">
+                      🔒 יש לבחור קודם את המדור שאליו אתה שייך (8120 / 8150 / 8110 / 8130 / 8330)
                     </div>
 
                     <div id="boxAddMachsanai" class="inline-add-box no-print hidden">

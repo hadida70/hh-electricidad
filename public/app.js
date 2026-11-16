@@ -532,27 +532,87 @@ photoFileInput.addEventListener('change', (e) => {
 });
 
 // ==========================================
-// 5. שם המחסנאי המאשר וחתימה — שמות עם מספר מדור (לדוגמה: חיים הדידה 8110)
+// 5. שם המחסנאי המאשר וחתימה — בחירת מדור (עם PIN לכל מדור) תחילה ואז בחירת שם
 // ==========================================
+const MADORES_LIST = ['8120', '8150', '8110', '8130', '8330'];
+const madorLockStatus = document.getElementById('madorLockStatus');
+let configuredMadores = {};
+const unlockedMadorPins = {};
+
+function updateMadorUiState() {
+  document.querySelectorAll('.btn-mador-tab').forEach((b) => {
+    const m = b.dataset.mador || '';
+    const isActive = m === currentMador;
+    const isLocked = Boolean(configuredMadores[m]) && !unlockedMadorPins[m];
+    b.classList.toggle('active', isActive);
+    b.textContent = isLocked ? `🔒 ${m}` : m;
+  });
+
+  if (madorLockStatus) {
+    if (!currentMador) {
+      madorLockStatus.textContent = '🔒 יש לבחור קודם את המדור שאליו אתה שייך (8120 / 8150 / 8110 / 8130 / 8330)';
+      madorLockStatus.classList.remove('is-unlocked');
+    } else {
+      madorLockStatus.textContent = `🔓 מדור ${currentMador} פתוח — בחר את שמך מהרשימה`;
+      madorLockStatus.classList.add('is-unlocked');
+    }
+  }
+}
+
 document.querySelectorAll('.btn-mador-tab').forEach((btn) => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', async () => {
     const clickedMador = btn.dataset.mador || '';
-    currentMador = currentMador === clickedMador ? '' : clickedMador;
-    document.querySelectorAll('.btn-mador-tab').forEach((b) => {
-      b.classList.toggle('active', b.dataset.mador === currentMador);
-    });
-    renderMachsanaimDropdown();
+    if (!clickedMador) return;
+
+    if (currentMador === clickedMador) {
+      currentMador = '';
+      updateMadorUiState();
+      renderMachsanaimDropdown('');
+      return;
+    }
+
+    if (configuredMadores[clickedMador] && !unlockedMadorPins[clickedMador]) {
+      const entered = window.prompt(`נא להזין קוד PIN של מדור ${clickedMador}:`);
+      if (entered === null) return;
+      try {
+        const res = await fetch('/api/verify-mador-pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mador: clickedMador, pin: entered.trim() })
+        });
+        if (!res.ok) {
+          window.alert(`❌ קוד PIN שגוי עבור מדור ${clickedMador}!`);
+          return;
+        }
+        unlockedMadorPins[clickedMador] = entered.trim();
+      } catch {
+        window.alert('שגיאת תקשורת עם השרת.');
+        return;
+      }
+    }
+
+    currentMador = clickedMador;
+    updateMadorUiState();
+    renderMachsanaimDropdown('');
   });
 });
 
 function renderMachsanaimDropdown(selectedVal) {
+  updateMadorUiState();
+
+  if (!currentMador) {
+    shemMachsanai.innerHTML = `<option value="">-- יש לבחור מדור תחילה --</option>`;
+    shemMachsanai.disabled = true;
+    machsanaiNamesList.innerHTML = '';
+    return;
+  }
+
+  shemMachsanai.disabled = false;
   const current = selectedVal !== undefined ? selectedVal : shemMachsanai.value;
-  const filtered = currentMador
-    ? machsanaimList.filter((m) => String(m.shem).includes(currentMador))
-    : machsanaimList;
+  const filtered = machsanaimList.filter((m) => String(m.shem).includes(currentMador));
 
   shemMachsanai.innerHTML =
-    `<option value="">-- בחר שם המחסנאי המאשר --</option>` +
+    `<option value="">-- בחר שם המחסנאי המאשר (${currentMador}) --</option>` +
     filtered
       .map((m) => `<option value="${escapeHtml(m.shem)}">${escapeHtml(m.shem)}</option>`)
       .join('') +
@@ -717,6 +777,7 @@ function resetForm() {
   addedProductSerialItems = [];
   addedPhotosList = [];
   shemMachsanai.value = '';
+  renderMachsanaimDropdown('');
   clearSignature();
   renderAddedProductsTable();
   renderAddedPhotos();
@@ -947,10 +1008,34 @@ async function loadSettings() {
       if (Array.isArray(data.whatsapp_contacts)) {
         whatsappContacts = data.whatsapp_contacts;
       }
+      if (data.configured_madores && typeof data.configured_madores === 'object') {
+        configuredMadores = data.configured_madores;
+        updateMadorUiState();
+      }
       populateContactsInputs();
       if (currentSavedRecordForWa) {
         renderCurrentEntryWhatsappButtons();
       }
+    }
+  } catch {
+    // ignore
+  }
+}
+
+async function loadAdminMadorPins() {
+  try {
+    const res = await fetch('/api/admin/mador-pins', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: verifiedPin })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const pins = data.mador_pins || {};
+      MADORES_LIST.forEach((m) => {
+        const el = document.getElementById(`madorPin${m}`);
+        if (el) el.value = pins[m] || '';
+      });
     }
   } catch {
     // ignore
@@ -971,6 +1056,7 @@ document.getElementById('btnOpenWhatsappConfig').addEventListener('click', async
   }
   verifiedPin = enteredPin.trim();
   populateContactsInputs();
+  await loadAdminMadorPins();
   whatsappConfigBox.classList.remove('hidden');
   const firstInput = waContactsList.querySelector('.wa-name-input');
   if (firstInput) firstInput.focus();
@@ -992,6 +1078,11 @@ document.getElementById('btnAddWhatsappContact').addEventListener('click', () =>
 document.getElementById('btnSaveWhatsappContacts').addEventListener('click', async () => {
   const rawContacts = collectEditingContactsFromDom();
   const newContacts = rawContacts.filter((c) => c.name !== '' || c.phone !== '');
+  const madorPinsPayload = {};
+  MADORES_LIST.forEach((m) => {
+    const el = document.getElementById(`madorPin${m}`);
+    madorPinsPayload[m] = el ? el.value.trim() : '';
+  });
 
   try {
     const res = await fetch('/api/settings', {
@@ -999,21 +1090,33 @@ document.getElementById('btnSaveWhatsappContacts').addEventListener('click', asy
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         pin: verifiedPin,
-        whatsapp_contacts: newContacts
+        whatsapp_contacts: newContacts,
+        mador_pins: madorPinsPayload
       })
     });
     const data = await res.json();
     if (!res.ok) {
-      showAlert(data.error || 'שגיאה בשמירת אנשי הקשר', 'error');
+      showAlert(data.error || 'שגיאה בשמירת ההגדרות', 'error');
       return;
     }
 
     whatsappContacts = data.whatsapp_contacts || newContacts;
+    if (data.configured_madores && typeof data.configured_madores === 'object') {
+      configuredMadores = data.configured_madores;
+      // Limpiar sesiones desbloqueadas si cambió o se activó PIN
+      Object.keys(unlockedMadorPins).forEach((m) => {
+        if (madorPinsPayload[m] !== unlockedMadorPins[m]) {
+          delete unlockedMadorPins[m];
+          if (currentMador === m) currentMador = '';
+        }
+      });
+      renderMachsanaimDropdown();
+    }
     populateContactsInputs();
     if (currentSavedRecordForWa) {
       renderCurrentEntryWhatsappButtons();
     }
-    waPhoneSavedStatus.textContent = '✅ אנשי הקשר נשמרו בהצלחה!';
+    waPhoneSavedStatus.textContent = '✅ ההגדרות נשמרו בהצלחה!';
     setTimeout(() => {
       waPhoneSavedStatus.textContent = '';
       whatsappConfigBox.classList.add('hidden');
@@ -1202,6 +1305,8 @@ form.addEventListener('submit', async (e) => {
     mutzarim_items: addedProductSerialItems,
     tmunot: addedPhotosList,
     shem_machsanai: shemMachsanai.value.trim(),
+    mador: currentMador,
+    mador_pin: unlockedMadorPins[currentMador] || '',
     chatima_data_url: hasSignature ? canvas.toDataURL('image/png') : ''
   };
 
@@ -1218,6 +1323,11 @@ form.addEventListener('submit', async (e) => {
   if (!payload.taarich_prika) {
     showAlert('נא למלא תאריך', 'error');
     taarichPrika.focus();
+    return;
+  }
+  if (!currentMador || !payload.shem_machsanai) {
+    showAlert('נא לבחור מדור, להזין את ה-PIN של המדור ולבחור שם המחסנאי המאשר', 'error');
+    shemMachsanai.focus();
     return;
   }
 

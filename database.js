@@ -193,6 +193,44 @@ function normalizeWhatsappContacts(rawList) {
   return list;
 }
 
+const MADORES = ['8120', '8150', '8110', '8130', '8330'];
+
+function extractMador(shem) {
+  const m = String(shem || '').match(/\b(8120|8150|8110|8130|8330)\b/);
+  return m ? m[1] : '';
+}
+
+function getMadorPinsMap() {
+  const row = db.prepare(`SELECT value FROM settings WHERE key = 'mador_pins'`).get();
+  let parsed = {};
+  try {
+    parsed = JSON.parse((row && row.value) || '{}');
+  } catch {
+    parsed = {};
+  }
+  const out = {};
+  for (const m of MADORES) {
+    out[m] = String((parsed && parsed[m]) || '').trim();
+  }
+  return out;
+}
+
+function verifyMadorPin(mador, pin) {
+  const code = String(mador || '').trim();
+  if (!code) return false;
+  const pins = getMadorPinsMap();
+  const expected = pins[code] || '';
+  if (!expected) return true; // Si el administrador aún no fijó PIN para ese מדור
+  return String(pin || '').trim() === expected;
+}
+
+function getAdminMadorPins(adminPin) {
+  if (!verifyPin(adminPin)) {
+    throw new Error('קוד PIN שגוי');
+  }
+  return getMadorPinsMap();
+}
+
 function getSettings() {
   const row = db.prepare(`SELECT value FROM settings WHERE key = 'whatsapp_contacts'`).get();
   let contacts = [];
@@ -201,8 +239,14 @@ function getSettings() {
   } catch {
     contacts = [];
   }
+  const pins = getMadorPinsMap();
+  const configuredMadores = {};
+  for (const m of MADORES) {
+    configuredMadores[m] = Boolean(pins[m]);
+  }
   return {
-    whatsapp_contacts: normalizeWhatsappContacts(contacts)
+    whatsapp_contacts: normalizeWhatsappContacts(contacts),
+    configured_madores: configuredMadores
   };
 }
 
@@ -218,6 +262,17 @@ function updateSettings(newSettings = {}) {
       JSON.stringify(cleanContacts)
     );
   }
+
+  if (newSettings.mador_pins && typeof newSettings.mador_pins === 'object') {
+    const cleanPins = {};
+    for (const m of MADORES) {
+      cleanPins[m] = String(newSettings.mador_pins[m] || '').trim();
+    }
+    db.prepare(`INSERT OR REPLACE INTO settings (key, value) VALUES ('mador_pins', ?)`).run(
+      JSON.stringify(cleanPins)
+    );
+  }
+
   return getSettings();
 }
 
@@ -335,6 +390,8 @@ function createRecord({
   mutzarim_items = [],
   tmunot = [],
   shem_machsanai = '',
+  mador = '',
+  mador_pin = '',
   chatima_data_url = ''
 }) {
   if (!machsan_sholeach.trim()) {
@@ -345,6 +402,13 @@ function createRecord({
   }
   if (!taarich_prika.trim()) {
     throw new Error('נא למלא: תאריך פריקה');
+  }
+  if (!String(shem_machsanai || '').trim()) {
+    throw new Error('נא לבחור מדור ושם המחסנאי המאשר');
+  }
+  const detectedMador = extractMador(shem_machsanai) || String(mador || '').trim();
+  if (detectedMador && !verifyMadorPin(detectedMador, mador_pin)) {
+    throw new Error(`קוד PIN שגוי עבור מדור ${detectedMador} — לא ניתן לשמור`);
   }
 
   db.prepare(`INSERT OR IGNORE INTO menahalei_avoda (shem) VALUES (?)`).run(
@@ -414,6 +478,8 @@ module.exports = {
   db,
   DB_PATH,
   verifyPin,
+  verifyMadorPin,
+  getAdminMadorPins,
   getSettings,
   updateSettings,
   getMenahaleiAvoda,
