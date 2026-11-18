@@ -24,6 +24,7 @@ const catalogProductsList = document.getElementById('catalogProductsList');
 const itemSerialInput = document.getElementById('itemSerialInput');
 const addedProductsTableWrap = document.getElementById('addedProductsTableWrap');
 const addedProductsTbody = document.getElementById('addedProductsTbody');
+const cameraFileInput = document.getElementById('cameraFileInput');
 const photoFileInput = document.getElementById('photoFileInput');
 const addedPhotosWrap = document.getElementById('addedPhotosWrap');
 const photosGalleryList = document.getElementById('photosGalleryList');
@@ -511,25 +512,65 @@ function renderAddedPhotos() {
   });
 }
 
-document.getElementById('btnTriggerPhoto').addEventListener('click', () => {
-  photoFileInput.click();
-});
-
-photoFileInput.addEventListener('change', (e) => {
-  const files = Array.from(e.target.files || []);
-  files.forEach((file) => {
-    if (!file.type.startsWith('image/')) return;
+function compressImageFile(file, maxDim = 1280, quality = 0.78) {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
+    reader.onerror = () => reject(new Error('read_error'));
     reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        addedPhotosList.push(reader.result);
-        renderAddedPhotos();
-      }
+      const dataUrl = typeof reader.result === 'string' ? reader.result : '';
+      if (!dataUrl) return reject(new Error('empty_data'));
+
+      const img = new Image();
+      img.onload = () => {
+        try {
+          let w = img.naturalWidth || img.width;
+          let h = img.naturalHeight || img.height;
+          if (!w || !h) return resolve(dataUrl);
+          if (w > maxDim || h > maxDim) {
+            const ratio = Math.min(maxDim / w, maxDim / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const c = document.createElement('canvas');
+          c.width = w;
+          c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(c.toDataURL('image/jpeg', quality));
+        } catch {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
     };
     reader.readAsDataURL(file);
   });
-  photoFileInput.value = '';
-});
+}
+
+async function handleSelectedPhotoFiles(inputEl) {
+  const files = Array.from(inputEl.files || []);
+  for (const file of files) {
+    if (file.type && !file.type.startsWith('image/')) continue;
+    try {
+      const compressed = await compressImageFile(file);
+      if (compressed) {
+        addedPhotosList.push(compressed);
+        renderAddedPhotos();
+      }
+    } catch {
+      showAlert('שגיאה בטעינת התמונה מהמצלמה/גלריה', 'error');
+    }
+  }
+  inputEl.value = '';
+}
+
+if (cameraFileInput) {
+  cameraFileInput.addEventListener('change', () => handleSelectedPhotoFiles(cameraFileInput));
+}
+if (photoFileInput) {
+  photoFileInput.addEventListener('change', () => handleSelectedPhotoFiles(photoFileInput));
+}
 
 // ==========================================
 // 5. שם המחסנאי המאשר וחתימה — בחירת מדור (עם PIN לכל מדור) תחילה ואז בחירת שם
