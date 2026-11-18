@@ -1489,6 +1489,32 @@ document.getElementById('btnExportCsv').addEventListener('click', () => {
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
+  // Tomar automáticamente lo escrito en las cajas ➕ aunque el usuario no haya tocado 'שמור' / 'הוסף'
+  if (newMenahelNameInput && newMenahelNameInput.value.trim()) {
+    await addNewMenahelName();
+  }
+  if (newNahagNameInput && newNahagNameInput.value.trim()) {
+    await addNewNahagName();
+  }
+  if (newCatalogProductInput && newCatalogProductInput.value.trim()) {
+    await addNewCatalogProduct();
+  }
+  if (currentMador && newMachsanaiNameInput && newMachsanaiNameInput.value.trim()) {
+    await addNewMachsanaiName();
+  }
+
+  const pendingProd = (itemProductSelect.value || '').trim();
+  const pendingSerial = (itemSerialInput.value || '').trim();
+  if (
+    pendingProd &&
+    pendingProd !== '__ADD_NEW__' &&
+    (addedProductSerialItems.length === 0 || pendingSerial !== '')
+  ) {
+    addedProductSerialItems.push({ product: pendingProd, serial: pendingSerial });
+    renderAddedProductsTable();
+    itemSerialInput.value = '';
+  }
+
   const payload = {
     machsan_sholeach: machsanSholeach.value.trim(),
     shem_nahag: shemNahag.value.trim(),
@@ -1503,18 +1529,23 @@ form.addEventListener('submit', async (e) => {
   };
 
   if (!payload.machsan_sholeach) {
-    showAlert('נא לבחור שם מנהל עבודה מהתפריט הנפתח', 'error');
+    showAlert('נא לבחור או להזין שם מנהל עבודה', 'error');
     machsanSholeach.focus();
     return;
   }
   if (!payload.shem_nahag) {
-    showAlert('נא לבחור שם הנהג מהתפריט הנפתח', 'error');
+    showAlert('נא לבחור או להזין שם הנהג', 'error');
     shemNahag.focus();
     return;
   }
   if (!payload.taarich_prika) {
     showAlert('נא למלא תאריך', 'error');
     taarichPrika.focus();
+    return;
+  }
+  if (!payload.mutzarim_items || payload.mutzarim_items.length === 0) {
+    showAlert('נא לבחור או להזין לפחות מוצר אחד', 'error');
+    itemProductSelect.focus();
     return;
   }
   if (!currentMador || !payload.shem_machsanai) {

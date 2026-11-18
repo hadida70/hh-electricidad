@@ -436,13 +436,19 @@ function createRecord({
     );
   }
 
-  const cleanItems = Array.isArray(mutzarim_items) ? mutzarim_items : [];
+  const cleanItems = (Array.isArray(mutzarim_items) ? mutzarim_items : [])
+    .map((item) => ({
+      product: String((item && item.product) || '').trim(),
+      serial: String((item && item.serial) || '').trim()
+    }))
+    .filter((item) => item.product !== '');
+
+  if (cleanItems.length === 0) {
+    throw new Error('נא לבחור או להזין לפחות מוצר אחד');
+  }
+
   for (const item of cleanItems) {
-    if (item && item.product && String(item.product).trim()) {
-      db.prepare(`INSERT OR IGNORE INTO mutzarim (shem) VALUES (?)`).run(
-        String(item.product).trim()
-      );
-    }
+    db.prepare(`INSERT OR IGNORE INTO mutzarim (shem) VALUES (?)`).run(item.product);
   }
 
   const cleanPhotos = Array.isArray(tmunot) ? tmunot : [];
