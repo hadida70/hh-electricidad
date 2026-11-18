@@ -25,7 +25,6 @@ const itemSerialInput = document.getElementById('itemSerialInput');
 const addedProductsTableWrap = document.getElementById('addedProductsTableWrap');
 const addedProductsTbody = document.getElementById('addedProductsTbody');
 const cameraFileInput = document.getElementById('cameraFileInput');
-const photoFileInput = document.getElementById('photoFileInput');
 const addedPhotosWrap = document.getElementById('addedPhotosWrap');
 const photosGalleryList = document.getElementById('photosGalleryList');
 
@@ -567,9 +566,6 @@ async function handleSelectedPhotoFiles(inputEl) {
 
 if (cameraFileInput) {
   cameraFileInput.addEventListener('change', () => handleSelectedPhotoFiles(cameraFileInput));
-}
-if (photoFileInput) {
-  photoFileInput.addEventListener('change', () => handleSelectedPhotoFiles(photoFileInput));
 }
 
 // ==========================================

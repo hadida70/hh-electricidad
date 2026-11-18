@@ -440,14 +440,6 @@ body {
   background: #047857;
 }
 
-.btn-gallery-btn {
-  background: #0284c7;
-}
-
-.btn-gallery-btn:hover {
-  background: #0369a1;
-}
-
 .mini-chips-list {
   display: flex;
   flex-wrap: wrap;
