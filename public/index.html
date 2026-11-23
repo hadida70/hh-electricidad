@@ -281,6 +281,15 @@
                   </div>
 
                   <div id="catalogProductsList" class="mini-chips-list no-print"></div>
+                  <div class="product-dblclick-hint no-print">
+                    💡 לחיצה כפולה (Double Click) על מוצר תוסיף אותו אוטומטית לרשימת המוצרים
+                  </div>
+
+                  <!-- תצוגת רשימת מוצרים (To-Do List) שנוספו -->
+                  <div id="addedProductsTableWrap" class="added-products-wrap hidden">
+                    <div class="todo-products-header">📋 רשימת מוצרים במשלוח:</div>
+                    <ul id="addedProductsTbody" class="todo-products-list"></ul>
+                  </div>
 
                   <!-- הערה כתובה + כפתור הוספת תמונה -->
                   <div class="hearot-note-photo-row no-print">
@@ -302,20 +311,6 @@
                     <label for="cameraFileInput" id="btnTriggerCamera" class="btn-photo-btn">
                       📷 מצלמה
                     </label>
-                  </div>
-
-                  <!-- תצוגת טבלת מוצרים + סידורי ותמונות שנוספו -->
-                  <div id="addedProductsTableWrap" class="added-products-wrap hidden">
-                    <table class="inner-ps-table">
-                      <thead>
-                        <tr>
-                          <th>מוצר</th>
-                          <th>סידורי (Serial)</th>
-                          <th class="no-print"></th>
-                        </tr>
-                      </thead>
-                      <tbody id="addedProductsTbody"></tbody>
-                    </table>
                   </div>
 
                   <div id="addedPhotosWrap" class="added-photos-wrap hidden">

@@ -317,8 +317,19 @@ taarichPrika.addEventListener('click', () => {
 });
 
 // ==========================================
-// 4. עמודת הערות — תפריט נפתח למוצרים + סידורי + תמונה
+// 4. עמודת הערות — תפריט נפתח למוצרים + סידורי + תמונה (רשימת To-Do בלחיצה כפולה)
 // ==========================================
+function quickAddProductToTodo(prodName) {
+  const product = String(prodName || '').trim();
+  if (!product || product === '__ADD_NEW__') return;
+  const serial = itemSerialInput.value.trim();
+  addedProductSerialItems.push({ product, serial });
+  itemSerialInput.value = '';
+  itemProductSelect.value = '';
+  renderAddedProductsTable();
+  renderProductsDropdown('');
+}
+
 function renderProductsDropdown(selectedVal) {
   const current = selectedVal !== undefined ? selectedVal : itemProductSelect.value;
   itemProductSelect.innerHTML =
@@ -332,22 +343,37 @@ function renderProductsDropdown(selectedVal) {
     itemProductSelect.value = current;
   }
 
+  const addedCounts = {};
+  addedProductSerialItems.forEach((it) => {
+    addedCounts[it.product] = (addedCounts[it.product] || 0) + 1;
+  });
+
   catalogProductsList.innerHTML = mutzarimCatalogList
-    .map(
-      (p) => `
-      <div class="menahel-name-chip" data-select-prod="${escapeHtml(p.shem)}">
-        <span>📦 ${escapeHtml(p.shem)}</span>
+    .map((p) => {
+      const count = addedCounts[p.shem] || 0;
+      const badge = count > 0 ? ` <strong>(✓${count > 1 ? count : ''})</strong>` : '';
+      return `
+      <div class="menahel-name-chip${count > 0 ? ' is-in-todo' : ''}" data-select-prod="${escapeHtml(p.shem)}" title="לחיצה כפולה להוספה מהירה לרשימה">
+        <span>${count > 0 ? '✅' : '📦'} ${escapeHtml(p.shem)}${badge}</span>
         <button type="button" class="chip-del-btn" data-del-prod-id="${p.id}" title="מחק">✕</button>
       </div>
-    `
-    )
+    `;
+    })
     .join('');
 
   catalogProductsList.querySelectorAll('.menahel-name-chip').forEach((chip) => {
+    let lastTapTime = 0;
     chip.addEventListener('click', (e) => {
       if (e.target.closest('.chip-del-btn')) return;
+      const now = Date.now();
+      if (now - lastTapTime < 380) {
+        // Double click / double tap en móvil o PC -> agrega directo al To-Do
+        lastTapTime = 0;
+        quickAddProductToTodo(chip.dataset.selectProd);
+        return;
+      }
+      lastTapTime = now;
       itemProductSelect.value = chip.dataset.selectProd;
-      itemSerialInput.focus();
     });
   });
 
@@ -363,6 +389,12 @@ function renderProductsDropdown(selectedVal) {
     });
   });
 }
+
+itemProductSelect.addEventListener('dblclick', () => {
+  if (itemProductSelect.value && itemProductSelect.value !== '__ADD_NEW__') {
+    quickAddProductToTodo(itemProductSelect.value);
+  }
+});
 
 itemProductSelect.addEventListener('change', () => {
   if (itemProductSelect.value === '__ADD_NEW__') {
@@ -439,23 +471,34 @@ function renderAddedProductsTable() {
   addedProductsTbody.innerHTML = addedProductSerialItems
     .map(
       (item, idx) => `
-      <tr>
-        <td><strong>${escapeHtml(item.product)}</strong></td>
-        <td dir="ltr" style="text-align:right; font-family:monospace; font-weight:700;">${item.serial ? escapeHtml(item.serial) : '-'}</td>
-        <td class="no-print" style="width:28px; text-align:center;">
-          <button type="button" class="chip-del-btn" data-remove-ps-idx="${idx}" title="הסר">✕</button>
-        </td>
-      </tr>
+      <li class="todo-product-item">
+        <div class="todo-product-main">
+          <input type="checkbox" class="todo-product-check no-print" data-remove-ps-idx="${idx}" checked title="הסר מהרשימה" />
+          <strong>${idx + 1}. ${escapeHtml(item.product)}</strong>
+          ${
+            item.serial
+              ? `<span class="todo-serial-badge" dir="ltr">סידורי: ${escapeHtml(item.serial)}</span>`
+              : ''
+          }
+        </div>
+        <button type="button" class="chip-del-btn no-print" data-remove-ps-idx="${idx}" title="הסר">✕</button>
+      </li>
     `
     )
     .join('');
 
-  addedProductsTbody.querySelectorAll('[data-remove-ps-idx]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const idx = Number(btn.dataset.removePsIdx);
+  addedProductsTbody.querySelectorAll('[data-remove-ps-idx]').forEach((el) => {
+    const handler = () => {
+      const idx = Number(el.dataset.removePsIdx);
       addedProductSerialItems.splice(idx, 1);
       renderAddedProductsTable();
-    });
+      renderProductsDropdown();
+    };
+    if (el.tagName === 'INPUT') {
+      el.addEventListener('change', handler);
+    } else {
+      el.addEventListener('click', handler);
+    }
   });
 }
 
@@ -464,15 +507,16 @@ function addProductAndSerialRow() {
   const serial = itemSerialInput.value.trim();
 
   if (!product || product === '__ADD_NEW__') {
-    showAlert('נא לבחור מוצר מהתפריט הנפתח (או להוסיף מוצר ב-➕)', 'error');
+    showAlert('נא לבחור מוצר מהתפריט הנפתח (או לחיצה כפולה על מוצר)', 'error');
     itemProductSelect.focus();
     return;
   }
 
   addedProductSerialItems.push({ product, serial });
-  renderAddedProductsTable();
   itemSerialInput.value = '';
-  itemSerialInput.focus();
+  itemProductSelect.value = '';
+  renderAddedProductsTable();
+  renderProductsDropdown('');
 }
 
 document.getElementById('btnAddProductSerial').addEventListener('click', addProductAndSerialRow);
@@ -815,6 +859,7 @@ function resetForm() {
   addedPhotosList = [];
   shemMachsanai.value = '';
   renderMachsanaimDropdown('');
+  renderProductsDropdown('');
   clearSignature();
   renderAddedProductsTable();
   renderAddedPhotos();

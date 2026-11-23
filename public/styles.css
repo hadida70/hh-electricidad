@@ -457,6 +457,82 @@ body {
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.menahel-name-chip.is-in-todo {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #14532d;
+}
+
+.product-dblclick-hint {
+  font-size: 0.78rem;
+  color: #475569;
+  margin-top: -0.1rem;
+}
+
+.added-products-wrap {
+  background: #f8fafc;
+  border: 1.5px solid #0f4c81;
+  border-radius: 7px;
+  padding: 0.5rem 0.65rem;
+  margin-top: 0.2rem;
+}
+
+.todo-products-header {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #0f4c81;
+  margin-bottom: 0.35rem;
+}
+
+.todo-products-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.todo-product-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-right: 4px solid #16a34a;
+  border-radius: 6px;
+  padding: 0.38rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.todo-product-main {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.todo-product-check {
+  width: 17px;
+  height: 17px;
+  accent-color: #16a34a;
+  cursor: pointer;
+}
+
+.todo-serial-badge {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  font-family: monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .menahel-name-chip:hover {
