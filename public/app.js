@@ -613,12 +613,44 @@ if (cameraFileInput) {
 }
 
 // ==========================================
-// 5. שם המחסנאי המאשר וחתימה — בחירת מדור (עם PIN לכל מדור) תחילה ואז בחירת שם
+// 5. שם המחסנאי המאשר וחתימה — בחירת מדור (עם PIN לכל מדור) תחילה ואז בחירת שם (נשמר בסשן/מכשיר)
 // ==========================================
 const MADORES_LIST = ['8120', '8150', '8110', '8130', '8330'];
 const madorLockStatus = document.getElementById('madorLockStatus');
 let configuredMadores = {};
 const unlockedMadorPins = {};
+let savedShemMachsanai = '';
+
+(function restoreMachsanaiSession() {
+  try {
+    const storedMador = localStorage.getItem('hh_saved_mador') || '';
+    const storedPins = JSON.parse(localStorage.getItem('hh_saved_mador_pins') || '{}');
+    const storedName = localStorage.getItem('hh_saved_shem_machsanai') || '';
+    if (storedPins && typeof storedPins === 'object') {
+      Object.keys(storedPins).forEach((k) => {
+        if (storedPins[k]) unlockedMadorPins[k] = String(storedPins[k]);
+      });
+    }
+    if (storedMador && MADORES_LIST.includes(storedMador)) {
+      currentMador = storedMador;
+    }
+    if (storedName) {
+      savedShemMachsanai = storedName;
+    }
+  } catch {
+    // ignore
+  }
+})();
+
+function persistMachsanaiSession() {
+  try {
+    localStorage.setItem('hh_saved_mador', currentMador || '');
+    localStorage.setItem('hh_saved_mador_pins', JSON.stringify(unlockedMadorPins));
+    localStorage.setItem('hh_saved_shem_machsanai', savedShemMachsanai || '');
+  } catch {
+    // ignore
+  }
+}
 
 function updateMadorUiState() {
   document.querySelectorAll('.btn-mador-tab').forEach((b) => {
@@ -634,7 +666,7 @@ function updateMadorUiState() {
       madorLockStatus.textContent = '🔒 יש לבחור קודם את המדור שאליו אתה שייך (8120 / 8150 / 8110 / 8130 / 8330)';
       madorLockStatus.classList.remove('is-unlocked');
     } else {
-      madorLockStatus.textContent = `🔓 מדור ${currentMador} פתוח — בחר את שמך מהרשימה`;
+      madorLockStatus.textContent = `🔓 מדור ${currentMador} פתוח (נשמר במכשיר) — בחר את שמך מהרשימה`;
       madorLockStatus.classList.add('is-unlocked');
     }
   }
@@ -647,6 +679,8 @@ document.querySelectorAll('.btn-mador-tab').forEach((btn) => {
 
     if (currentMador === clickedMador) {
       currentMador = '';
+      savedShemMachsanai = '';
+      persistMachsanaiSession();
       updateMadorUiState();
       renderMachsanaimDropdown('');
       return;
@@ -673,6 +707,8 @@ document.querySelectorAll('.btn-mador-tab').forEach((btn) => {
     }
 
     currentMador = clickedMador;
+    savedShemMachsanai = '';
+    persistMachsanaiSession();
     updateMadorUiState();
     renderMachsanaimDropdown('');
   });
@@ -689,7 +725,8 @@ function renderMachsanaimDropdown(selectedVal) {
   }
 
   shemMachsanai.disabled = false;
-  const current = selectedVal !== undefined ? selectedVal : shemMachsanai.value;
+  const current =
+    selectedVal !== undefined ? selectedVal : shemMachsanai.value || savedShemMachsanai;
   const filtered = machsanaimList.filter((m) => String(m.shem).includes(currentMador));
 
   shemMachsanai.innerHTML =
@@ -699,8 +736,10 @@ function renderMachsanaimDropdown(selectedVal) {
       .join('') +
     `<option value="__ADD_NEW__">➕ הוסף שם מאשר חדש לתפריט...</option>`;
 
-  if (current && current !== '__ADD_NEW__') {
+  if (current && current !== '__ADD_NEW__' && filtered.some((m) => m.shem === current)) {
     shemMachsanai.value = current;
+    savedShemMachsanai = current;
+    persistMachsanaiSession();
   }
 
   machsanaiNamesList.innerHTML = filtered
@@ -718,6 +757,8 @@ function renderMachsanaimDropdown(selectedVal) {
     chip.addEventListener('click', (e) => {
       if (e.target.closest('.chip-del-btn')) return;
       shemMachsanai.value = chip.dataset.selectMachsanai;
+      savedShemMachsanai = shemMachsanai.value;
+      persistMachsanaiSession();
     });
   });
 
@@ -739,6 +780,9 @@ shemMachsanai.addEventListener('change', () => {
     shemMachsanai.value = '';
     boxAddMachsanai.classList.remove('hidden');
     newMachsanaiNameInput.focus();
+  } else {
+    savedShemMachsanai = shemMachsanai.value;
+    persistMachsanaiSession();
   }
 });
 
@@ -857,8 +901,7 @@ function resetForm() {
   itemSerialInput.value = '';
   addedProductSerialItems = [];
   addedPhotosList = [];
-  shemMachsanai.value = '';
-  renderMachsanaimDropdown('');
+  renderMachsanaimDropdown(savedShemMachsanai);
   renderProductsDropdown('');
   clearSignature();
   renderAddedProductsTable();
@@ -1098,7 +1141,21 @@ async function loadSettings() {
       }
       if (data.configured_madores && typeof data.configured_madores === 'object') {
         configuredMadores = data.configured_madores;
-        updateMadorUiState();
+        if (currentMador && configuredMadores[currentMador]) {
+          const savedPin = unlockedMadorPins[currentMador] || '';
+          const rPin = await fetch('/api/verify-mador-pin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mador: currentMador, pin: savedPin })
+          }).catch(() => null);
+          if (!rPin || !rPin.ok) {
+            delete unlockedMadorPins[currentMador];
+            currentMador = '';
+            savedShemMachsanai = '';
+            persistMachsanaiSession();
+          }
+        }
+        renderMachsanaimDropdown(savedShemMachsanai);
       }
       if (typeof data.admin_name === 'string') {
         currentAdminName = data.admin_name || 'מנהל המערכת';
@@ -1663,7 +1720,7 @@ loadMachsanaim();
 // ==========================================
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
-    .register('/sw.js?v=4')
+    .register('/sw.js?v=5')
     .then((reg) => reg.update().catch(() => {}))
     .catch(() => {});
 }
