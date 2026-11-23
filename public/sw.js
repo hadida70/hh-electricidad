@@ -1,8 +1,8 @@
-const CACHE_NAME = 'ishur-prika-v1';
+const CACHE_NAME = 'ishur-prika-v3';
 const SHELL_ASSETS = [
   '/',
-  '/styles.css',
-  '/app.js',
+  '/styles.css?v=3',
+  '/app.js?v=3',
   '/logo.png',
   '/icon-192.png',
   '/icon-512.png',
@@ -29,11 +29,11 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.pathname.startsWith('/api/')) return;
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/photo/')) return;
 
-  // Network-first so updates are always picked up immediately
+  // Network-first sin caché obsoleta para que el celular siempre reciba la última versión
   event.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-store' })
       .then((res) => {
         if (res && res.status === 200 && res.type === 'basic') {
           const copy = res.clone();

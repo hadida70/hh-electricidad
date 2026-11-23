@@ -1662,7 +1662,10 @@ loadMachsanaim();
 // 7. PWA: רישום Service Worker וכפתור התקנה ל-iPhone ו-Android
 // ==========================================
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
+  navigator.serviceWorker
+    .register('/sw.js?v=3')
+    .then((reg) => reg.update().catch(() => {}))
+    .catch(() => {});
 }
 
 (function initPwaInstall() {
@@ -1689,6 +1692,8 @@ if ('serviceWorker' in navigator) {
   const isIos = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isAndroid = /Android/i.test(ua);
   const isInAppBrowser = /WhatsApp|FBAN|FBAV|Instagram|Line\/|wv\)/i.test(ua);
+  const hostAndPath = window.location.host + window.location.pathname + window.location.search;
+  const chromeIntentUrl = `intent://${hostAndPath}#Intent;scheme=https;package=com.android.chrome;end`;
 
   if (isIos && pwaGuideIos) pwaGuideIos.classList.add('is-highlighted');
   if (isAndroid && pwaGuideAndroid) pwaGuideAndroid.classList.add('is-highlighted');
@@ -1696,56 +1701,86 @@ if ('serviceWorker' in navigator) {
   if (isInAppBrowser && pwaInAppWarning) {
     pwaInAppWarning.classList.remove('hidden');
     if (isAndroid && btnOpenInChrome) {
-      const hostAndPath = window.location.host + window.location.pathname + window.location.search;
-      btnOpenInChrome.href = `intent://${hostAndPath}#Intent;scheme=https;package=com.android.chrome;end`;
+      btnOpenInChrome.href = chromeIntentUrl;
     } else if (btnOpenInChrome) {
       btnOpenInChrome.classList.add('hidden');
     }
   }
 
-  // Mostrar automáticamente el panel de descarga/instalación al entrar desde el link
-  if (sessionStorage.getItem('pwa_banner_dismissed') !== '1') {
+  // Asegurar que el botón y el panel "התקן כאפליקציה" estén visibles en el celular
+  btnInstallPwa.classList.remove('hidden');
+  if (pwaDirectInstallWrap) pwaDirectInstallWrap.classList.remove('hidden');
+  if (sessionStorage.getItem('pwa_banner_dismissed') === '1') {
+    pwaInstallBox.classList.add('hidden');
+  } else {
     pwaInstallBox.classList.remove('hidden');
   }
 
-  let deferredPrompt = null;
+  let deferredPrompt = window.__deferredPwaPrompt || null;
+
+  function syncDeferredPrompt() {
+    if (window.__deferredPwaPrompt) {
+      deferredPrompt = window.__deferredPwaPrompt;
+    }
+  }
+
+  window.addEventListener('pwa-prompt-ready', () => {
+    syncDeferredPrompt();
+    if (pwaDirectInstallWrap) pwaDirectInstallWrap.classList.remove('hidden');
+    pwaInstallBox.classList.remove('hidden');
+  });
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
+    window.__deferredPwaPrompt = e;
     deferredPrompt = e;
     if (pwaDirectInstallWrap) pwaDirectInstallWrap.classList.remove('hidden');
     pwaInstallBox.classList.remove('hidden');
   });
 
   window.addEventListener('appinstalled', () => {
+    window.__deferredPwaPrompt = null;
     deferredPrompt = null;
     pwaInstallBox.classList.add('hidden');
     btnInstallPwa.classList.add('hidden');
   });
 
-  async function runNativePrompt() {
-    if (!deferredPrompt) return false;
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
-    if (choice && choice.outcome === 'accepted') {
-      deferredPrompt = null;
-      pwaInstallBox.classList.add('hidden');
-      return true;
-    }
-    return false;
-  }
-
-  btnInstallPwa.addEventListener('click', async () => {
+  async function handleInstallAction() {
+    syncDeferredPrompt();
     if (deferredPrompt) {
-      await runNativePrompt();
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
+      if (choice && choice.outcome === 'accepted') {
+        window.__deferredPwaPrompt = null;
+        deferredPrompt = null;
+        pwaInstallBox.classList.add('hidden');
+      }
       return;
     }
+
+    // Si se abrió dentro del navegador interno de WhatsApp en Android, abrir directo en Chrome
+    if (isInAppBrowser && isAndroid) {
+      window.location.href = chromeIntentUrl;
+      return;
+    }
+
     pwaInstallBox.classList.remove('hidden');
     pwaInstallBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
 
+    if (isIos) {
+      window.alert(
+        '🍎 להתקנה באייפון (Safari):\n1. לחץ על כפתור השיתוף ⬆️ בתחתית המסך\n2. גלול ובחר "הוסף למסך הבית" (Add to Home Screen)'
+      );
+    } else {
+      window.alert(
+        '📲 להתקנה כאפליקציה:\nלחץ על תפריט 3 הנקודות (⋮) בפינה העליונה של הדפדפן ובחר "התקן אפליקציה" (Install app) או "הוסף למסך הבית".'
+      );
+    }
+  }
+
+  btnInstallPwa.addEventListener('click', handleInstallAction);
   if (btnTriggerNativeInstall) {
-    btnTriggerNativeInstall.addEventListener('click', runNativePrompt);
+    btnTriggerNativeInstall.addEventListener('click', handleInstallAction);
   }
   if (btnClosePwaInstall) {
     btnClosePwaInstall.addEventListener('click', () => {

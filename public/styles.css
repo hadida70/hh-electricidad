@@ -1117,6 +1117,30 @@ body {
     padding: 1rem;
   }
 
+  .appendix-block {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .top-header-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+  }
+
+  .btn-pwa-install,
+  .btn-pwa-install-now,
+  .btn-admin-access,
+  .btn-admin-toggle {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    padding: 0.7rem 1rem;
+    font-size: 1rem;
+  }
+
   .prika-main-table,
   .prika-main-table thead,
   .prika-main-table tbody,

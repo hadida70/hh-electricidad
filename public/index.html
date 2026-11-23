@@ -11,7 +11,15 @@
   <meta name="apple-mobile-web-app-title" content="אישור פריקה" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="/logo.png" />
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=3" />
+  <script>
+    window.__deferredPwaPrompt = null;
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      window.__deferredPwaPrompt = e;
+      window.dispatchEvent(new CustomEvent('pwa-prompt-ready'));
+    });
+  </script>
 </head>
 <body>
   <main class="page-wrapper">
@@ -44,23 +52,23 @@
         </div>
       </div>
 
-      <!-- חלונית הוראות התקנה ל-iPhone ו-Android (מוצגת אוטומטית בכניסה מהקישור אם האפליקציה לא מותקנת) -->
-      <div id="pwaInstallBox" class="pwa-install-panel hidden no-print">
+      <!-- חלונית הוראות התקנה ל-iPhone ו-Android (גלויה כברירת מחדל בנייד עד להתקנה) -->
+      <div id="pwaInstallBox" class="pwa-install-panel no-print">
         <div class="wa-config-header">
-          <strong>📲 הורדה והתקנת האפליקציה בטלפון (iPhone / Android):</strong>
+          <strong>📲 התקן כאפליקציה בטלפון (iPhone / Android):</strong>
           <button type="button" id="btnClosePwaInstall" class="btn-outline" style="padding: 0.25rem 0.6rem; font-size: 0.82rem;">
             סגור ✕
           </button>
         </div>
         <div id="pwaInAppWarning" class="pwa-inapp-warning hidden">
-          ⚠️ פתחת את הקישור מתוך דפדפן פנימי (כגון WhatsApp). כדי להוריד כאפליקציה יש לפתוח ב-Chrome או ב-Safari:
+          ⚠️ פתחת את הקישור מתוך WhatsApp. כדי להתקין כאפליקציה יש לפתוח ב-Chrome או ב-Safari:
           <a id="btnOpenInChrome" href="#" class="btn-pwa-install-now" style="text-decoration:none; display:inline-block; margin-top:0.4rem;">
             🌐 פתח ב-Chrome להתקנה
           </a>
         </div>
-        <div id="pwaDirectInstallWrap" class="pwa-direct-wrap hidden">
+        <div id="pwaDirectInstallWrap" class="pwa-direct-wrap">
           <button type="button" id="btnTriggerNativeInstall" class="btn-pwa-install-now">
-            ⬇️ הורד והתקן את האפליקציה עכשיו
+            📲 התקן כאפליקציה עכשיו
           </button>
         </div>
         <div class="pwa-guides-grid">
@@ -518,6 +526,6 @@
     </form>
   </main>
 
-  <script src="/app.js"></script>
+  <script src="/app.js?v=3"></script>
 </body>
 </html>
