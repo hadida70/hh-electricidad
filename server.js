@@ -22,6 +22,7 @@ const {
   addMachsanai,
   deleteMachsanai,
   getAllRecords,
+  getRecordPhoto,
   createRecord,
   deleteRecord
 } = require('./database');
@@ -202,6 +203,21 @@ const server = http.createServer(async (req, res) => {
           machsanaim: getMachsanaim()
         });
       }
+    }
+
+    const matchPhoto = pathname.match(/^\/photo\/(\d+)\/(\d+)(?:\.[a-z0-9]+)?$/i);
+    if (matchPhoto && req.method === 'GET') {
+      const photo = getRecordPhoto(Number(matchPhoto[1]), Number(matchPhoto[2]));
+      if (!photo) {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        return res.end('התמונה לא נמצאה');
+      }
+      res.writeHead(200, {
+        'Content-Type': photo.mimeType || 'image/jpeg',
+        'Content-Length': photo.buffer.length,
+        'Cache-Control': 'public, max-age=86400'
+      });
+      return res.end(photo.buffer);
     }
 
     const matchRecordId = pathname.match(/^\/api\/ishur-prika\/(\d+)$/);

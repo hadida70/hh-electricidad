@@ -373,6 +373,27 @@ function deleteMachsanai(id) {
   return getMachsanaim();
 }
 
+function getRecordPhoto(recordId, photoIndex = 1) {
+  const row = db
+    .prepare(`SELECT tmunot_json FROM ishur_prika WHERE id = ?`)
+    .get(Number(recordId));
+  if (!row || !row.tmunot_json) return null;
+  let photos = [];
+  try {
+    photos = JSON.parse(row.tmunot_json || '[]');
+  } catch {
+    return null;
+  }
+  const dataUrl = photos[Number(photoIndex) - 1];
+  if (typeof dataUrl !== 'string') return null;
+  const m = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  if (!m) return null;
+  return {
+    mimeType: m[1],
+    buffer: Buffer.from(m[2], 'base64')
+  };
+}
+
 function getAllRecords() {
   return db
     .prepare(`
@@ -514,6 +535,7 @@ module.exports = {
   addMachsanai,
   deleteMachsanai,
   getAllRecords,
+  getRecordPhoto,
   createRecord,
   deleteRecord
 };

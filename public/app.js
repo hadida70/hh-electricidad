@@ -916,7 +916,13 @@ function buildWhatsappMessage(rec) {
   }
 
   if (photos.length > 0) {
-    lines.push(`📷 *תמונות מצורפות במערכת:* ${photos.length}`);
+    const origin = window.location.origin;
+    lines.push(`📷 *תמונות מצורפות (${photos.length}):*`);
+    photos.forEach((_, idx) => {
+      if (rec.id) {
+        lines.push(`${origin}/photo/${rec.id}/${idx + 1}.jpg`);
+      }
+    });
   }
 
   lines.push(`✍️ *שם המחסנאי המאשר:* ${rec.shem_machsanai || '-'}`);
@@ -1381,7 +1387,7 @@ function renderAdminRecordsTable() {
             photos
               .map(
                 (p, i) =>
-                  `<a href="${p}" target="_blank" title="פתיחת תמונה"><img src="${p}" alt="תמונה ${i + 1}" style="width:48px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #cbd5e1;" /></a>`
+                  `<a href="/photo/${r.id}/${i + 1}.jpg" target="_blank" title="פתיחת תמונה"><img src="${p}" alt="תמונה ${i + 1}" style="width:48px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #cbd5e1;" /></a>`
               )
               .join('') +
             `</div>`
