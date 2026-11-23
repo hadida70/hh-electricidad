@@ -44,32 +44,38 @@
         </div>
       </div>
 
-      <!-- חלונית הוראות התקנה ל-iPhone ו-Android -->
+      <!-- חלונית הוראות התקנה ל-iPhone ו-Android (מוצגת אוטומטית בכניסה מהקישור אם האפליקציה לא מותקנת) -->
       <div id="pwaInstallBox" class="pwa-install-panel hidden no-print">
         <div class="wa-config-header">
-          <strong>📲 התקנת האפליקציה בטלפון (iPhone / Android):</strong>
+          <strong>📲 הורדה והתקנת האפליקציה בטלפון (iPhone / Android):</strong>
           <button type="button" id="btnClosePwaInstall" class="btn-outline" style="padding: 0.25rem 0.6rem; font-size: 0.82rem;">
             סגור ✕
           </button>
         </div>
+        <div id="pwaInAppWarning" class="pwa-inapp-warning hidden">
+          ⚠️ פתחת את הקישור מתוך דפדפן פנימי (כגון WhatsApp). כדי להוריד כאפליקציה יש לפתוח ב-Chrome או ב-Safari:
+          <a id="btnOpenInChrome" href="#" class="btn-pwa-install-now" style="text-decoration:none; display:inline-block; margin-top:0.4rem;">
+            🌐 פתח ב-Chrome להתקנה
+          </a>
+        </div>
         <div id="pwaDirectInstallWrap" class="pwa-direct-wrap hidden">
           <button type="button" id="btnTriggerNativeInstall" class="btn-pwa-install-now">
-            ⬇️ התקן עכשיו בלחיצה אחת
+            ⬇️ הורד והתקן את האפליקציה עכשיו
           </button>
         </div>
         <div class="pwa-guides-grid">
           <div id="pwaGuideAndroid" class="pwa-guide-card">
             <h4>🤖 Android (Chrome)</h4>
             <ol>
-              <li>לחץ על כפתור ההתקנה למעלה (אם מופיע), או פתח את התפריט <strong>⋮</strong> בדפדפן Chrome.</li>
-              <li>בחר <strong>"התקן אפליקציה"</strong> או <strong>"הוסף למסך הבית"</strong>.</li>
+              <li>לחץ על הכפתור הירוק <strong>"⬇️ הורד והתקן את האפליקציה עכשיו"</strong> (או על התפריט <strong>⋮</strong> למעלה ב-Chrome).</li>
+              <li>בחר <strong>"התקן אפליקציה" (Install app)</strong> או <strong>"הוסף למסך הבית"</strong>.</li>
               <li>אשר בלחיצה על <strong>התקן</strong> — האפליקציה תופיע עם הלוגו במסך הבית.</li>
             </ol>
           </div>
           <div id="pwaGuideIos" class="pwa-guide-card">
             <h4>🍎 iPhone / iPad (Safari)</h4>
             <ol>
-              <li>פתח את הדף בדפדפן <strong>Safari</strong>.</li>
+              <li>ודא שהקישור פתוח בדפדפן <strong>Safari</strong>.</li>
               <li>לחץ על כפתור השיתוף <strong>⬆️ (Share)</strong> בתחתית המסך.</li>
               <li>גלול ובחר <strong>"הוסף למסך הבית" (Add to Home Screen)</strong> ולחץ על <strong>הוסף</strong>.</li>
             </ol>

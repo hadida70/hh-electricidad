@@ -1,10 +1,12 @@
 {
+  "id": "/",
   "name": "אישור פריקה - חברת החשמל",
   "short_name": "אישור פריקה",
   "description": "מערכת אישור פריקה - חברת החשמל",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "prefer_related_applications": false,
   "orientation": "portrait-primary",
   "dir": "rtl",
   "lang": "he",

@@ -74,6 +74,16 @@ body {
   align-items: center;
 }
 
+.pwa-inapp-warning {
+  background: #fef2f2;
+  border: 1.5px solid #ef4444;
+  color: #991b1b;
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .btn-pwa-install-now {
   background: #16a34a;
   color: #ffffff;

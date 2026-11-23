@@ -1662,9 +1662,7 @@ loadMachsanaim();
 // 7. PWA: רישום Service Worker וכפתור התקנה ל-iPhone ו-Android
 // ==========================================
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-  });
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 
 (function initPwaInstall() {
@@ -1675,20 +1673,40 @@ if ('serviceWorker' in navigator) {
   const btnTriggerNativeInstall = document.getElementById('btnTriggerNativeInstall');
   const pwaGuideAndroid = document.getElementById('pwaGuideAndroid');
   const pwaGuideIos = document.getElementById('pwaGuideIos');
+  const pwaInAppWarning = document.getElementById('pwaInAppWarning');
+  const btnOpenInChrome = document.getElementById('btnOpenInChrome');
   if (!btnInstallPwa || !pwaInstallBox) return;
 
   const isStandalone =
     window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   if (isStandalone) {
     btnInstallPwa.classList.add('hidden');
+    pwaInstallBox.classList.add('hidden');
     return;
   }
 
   const ua = navigator.userAgent || '';
   const isIos = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isAndroid = /Android/i.test(ua);
+  const isInAppBrowser = /WhatsApp|FBAN|FBAV|Instagram|Line\/|wv\)/i.test(ua);
+
   if (isIos && pwaGuideIos) pwaGuideIos.classList.add('is-highlighted');
   if (isAndroid && pwaGuideAndroid) pwaGuideAndroid.classList.add('is-highlighted');
+
+  if (isInAppBrowser && pwaInAppWarning) {
+    pwaInAppWarning.classList.remove('hidden');
+    if (isAndroid && btnOpenInChrome) {
+      const hostAndPath = window.location.host + window.location.pathname + window.location.search;
+      btnOpenInChrome.href = `intent://${hostAndPath}#Intent;scheme=https;package=com.android.chrome;end`;
+    } else if (btnOpenInChrome) {
+      btnOpenInChrome.classList.add('hidden');
+    }
+  }
+
+  // Mostrar automáticamente el panel de descarga/instalación al entrar desde el link
+  if (sessionStorage.getItem('pwa_banner_dismissed') !== '1') {
+    pwaInstallBox.classList.remove('hidden');
+  }
 
   let deferredPrompt = null;
 
@@ -1696,6 +1714,7 @@ if ('serviceWorker' in navigator) {
     e.preventDefault();
     deferredPrompt = e;
     if (pwaDirectInstallWrap) pwaDirectInstallWrap.classList.remove('hidden');
+    pwaInstallBox.classList.remove('hidden');
   });
 
   window.addEventListener('appinstalled', () => {
@@ -1717,12 +1736,12 @@ if ('serviceWorker' in navigator) {
   }
 
   btnInstallPwa.addEventListener('click', async () => {
-    // באנדרואיד/כרום אם יש חלון התקנה מובנה מוכן — פותח גם אותו וגם את ההוראות
     if (deferredPrompt) {
       await runNativePrompt();
       return;
     }
-    pwaInstallBox.classList.toggle('hidden');
+    pwaInstallBox.classList.remove('hidden');
+    pwaInstallBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
 
   if (btnTriggerNativeInstall) {
@@ -1730,6 +1749,7 @@ if ('serviceWorker' in navigator) {
   }
   if (btnClosePwaInstall) {
     btnClosePwaInstall.addEventListener('click', () => {
+      sessionStorage.setItem('pwa_banner_dismissed', '1');
       pwaInstallBox.classList.add('hidden');
     });
   }
