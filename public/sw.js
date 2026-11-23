@@ -1,8 +1,8 @@
-const CACHE_NAME = 'ishur-prika-v3';
+const CACHE_NAME = 'ishur-prika-v4';
 const SHELL_ASSETS = [
   '/',
-  '/styles.css?v=3',
-  '/app.js?v=3',
+  '/styles.css?v=4',
+  '/app.js?v=4',
   '/logo.png',
   '/icon-192.png',
   '/icon-512.png',

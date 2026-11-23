@@ -1663,7 +1663,7 @@ loadMachsanaim();
 // ==========================================
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
-    .register('/sw.js?v=3')
+    .register('/sw.js?v=4')
     .then((reg) => reg.update().catch(() => {}))
     .catch(() => {});
 }
@@ -1682,11 +1682,6 @@ if ('serviceWorker' in navigator) {
 
   const isStandalone =
     window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  if (isStandalone) {
-    btnInstallPwa.classList.add('hidden');
-    pwaInstallBox.classList.add('hidden');
-    return;
-  }
 
   const ua = navigator.userAgent || '';
   const isIos = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -1707,10 +1702,10 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  // Asegurar que el botón y el panel "התקן כאפליקציה" estén visibles en el celular
+  // NUNCA ocultar el botón naranja "📲 התקן כאפליקציה": siempre visible arriba de "🔐 כניסת מנהל"
   btnInstallPwa.classList.remove('hidden');
   if (pwaDirectInstallWrap) pwaDirectInstallWrap.classList.remove('hidden');
-  if (sessionStorage.getItem('pwa_banner_dismissed') === '1') {
+  if (isStandalone || sessionStorage.getItem('pwa_banner_dismissed') === '1') {
     pwaInstallBox.classList.add('hidden');
   } else {
     pwaInstallBox.classList.remove('hidden');
@@ -1726,6 +1721,7 @@ if ('serviceWorker' in navigator) {
 
   window.addEventListener('pwa-prompt-ready', () => {
     syncDeferredPrompt();
+    btnInstallPwa.classList.remove('hidden');
     if (pwaDirectInstallWrap) pwaDirectInstallWrap.classList.remove('hidden');
     pwaInstallBox.classList.remove('hidden');
   });
@@ -1734,6 +1730,7 @@ if ('serviceWorker' in navigator) {
     e.preventDefault();
     window.__deferredPwaPrompt = e;
     deferredPrompt = e;
+    btnInstallPwa.classList.remove('hidden');
     if (pwaDirectInstallWrap) pwaDirectInstallWrap.classList.remove('hidden');
     pwaInstallBox.classList.remove('hidden');
   });
@@ -1742,10 +1739,9 @@ if ('serviceWorker' in navigator) {
     window.__deferredPwaPrompt = null;
     deferredPrompt = null;
     pwaInstallBox.classList.add('hidden');
-    btnInstallPwa.classList.add('hidden');
   });
 
-  async function handleInstallAction() {
+  async function handleInstallAction(fromTopButton) {
     syncDeferredPrompt();
     if (deferredPrompt) {
       deferredPrompt.prompt();
@@ -1764,10 +1760,19 @@ if ('serviceWorker' in navigator) {
       return;
     }
 
+    // Si tocaron el botón naranja de arriba y el cuadro estaba cerrado, abrirlo y mostrar guía
+    if (fromTopButton && pwaInstallBox.classList.contains('hidden')) {
+      pwaInstallBox.classList.remove('hidden');
+      pwaInstallBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+
     pwaInstallBox.classList.remove('hidden');
     pwaInstallBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-    if (isIos) {
+    if (isStandalone) {
+      window.alert('✅ האפליקציה כבר מותקנת ופתוחה במכשיר זה!\nניתן גם לעיין בהוראות ההתקנה למכשירים אחרים בחלונית שנפתחה.');
+    } else if (isIos) {
       window.alert(
         '🍎 להתקנה באייפון (Safari):\n1. לחץ על כפתור השיתוף ⬆️ בתחתית המסך\n2. גלול ובחר "הוסף למסך הבית" (Add to Home Screen)'
       );
@@ -1778,9 +1783,9 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  btnInstallPwa.addEventListener('click', handleInstallAction);
+  btnInstallPwa.addEventListener('click', () => handleInstallAction(true));
   if (btnTriggerNativeInstall) {
-    btnTriggerNativeInstall.addEventListener('click', handleInstallAction);
+    btnTriggerNativeInstall.addEventListener('click', () => handleInstallAction(false));
   }
   if (btnClosePwaInstall) {
     btnClosePwaInstall.addEventListener('click', () => {
